@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: Microservicio Template
+  title: Authorization Microservice
   version: 1.0.0
-  description: Template para microservicios
+  description: Authorization microservice for medical consultation application. Handles the authorization of users for the entire application
 
 servers:
   - url: http://localhost:3001
