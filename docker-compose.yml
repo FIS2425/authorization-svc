@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   mongodb:
@@ -11,16 +11,16 @@ services:
     networks:
       - backend
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongo-data:/data/db
 
-  template:
+  authotization-svc:
     restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: template
+    container_name: authotization-svc
     environment:
       - MONGODB_URL=mongodb://${MONGOADMIN}:${MONGOPASS}@mongodb:27017/YOURSERVICE?authSource=admin
     depends_on:
@@ -28,7 +28,7 @@ services:
     networks:
       - backend
     ports:
-      - "3001:3001"
+      - '3001:3001'
 
 volumes:
   mongo-data:

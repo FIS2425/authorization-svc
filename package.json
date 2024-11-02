@@ -1,7 +1,7 @@
 {
-  "name": "template",
+  "name": "authotization-svc",
   "version": "1.0.0",
-  "description": "Template repository for starting a microservice",
+  "description": "Authorization microservice for medical consultation application. Handles the authorization of users for the entire application ",
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.9.0",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FIS2425/template.git"
+    "url": "git+https://github.com/FIS2425/authotization-svc.git"
   },
   "keywords": [
     "microservice",
@@ -27,9 +27,9 @@
   "author": "alvarobernal2412",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/FIS2425/template/issues"
+    "url": "https://github.com/FIS2425/authotization-svc/issues"
   },
-  "homepage": "https://github.com/FIS2425/template#readme",
+  "homepage": "https://github.com/FIS2425/authotization-svc#readme",
   "devDependencies": {
     "@commitlint/cli": "19.5.0",
     "@commitlint/config-conventional": "19.5.0",
