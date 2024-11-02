@@ -2,8 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import swaggerUI from 'swagger-ui-express';
 import YAML from 'yamljs';
-import { connectDB } from './config/database.js';
-
+import mongoose from 'mongoose';
 const swaggerDocument = YAML.load('./openapi.yaml');
 
 
@@ -22,8 +21,8 @@ app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 const startServer = async () => {
   try {
-    await connectDB();
-    
+    await mongoose.connect(process.env.MONGOURL);
+
     app.listen(PORT, () => {
       console.log(`Servidor escuchando en http://localhost:${PORT}/docs`);
     });
