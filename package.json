@@ -1,55 +1,56 @@
 {
-  "name": "authotization-svc",
-  "version": "1.0.0",
-  "description": "Authorization microservice for medical consultation application. Handles the authorization of users for the entire application ",
-  "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.9.0",
-    "yarn": "Yarn is not supported, please use npm",
-    "pnpm": "PNPM is not supported, please use npm"
-  },
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "start": "node --env-file=.env ./src/config/index.js",
-    "lint": "eslint . --max-warnings=0 --cache --cache-location node_modules/.cache/eslint",
-    "lint-fix": "eslint . --fix --max-warnings=0 --cache --cache-location node_modules/.cache/eslint",
-    "dev": "node --watch --env-file=.env ./src/config/index.js",
-    "test": "vitest",
-    "test:watch": "vitest --watch"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/FIS2425/authotization-svc.git"
-  },
-  "keywords": [
-    "microservice",
-    "MERN"
-  ],
-  "author": "alvarobernal2412",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/FIS2425/authotization-svc/issues"
-  },
-  "homepage": "https://github.com/FIS2425/authotization-svc#readme",
-  "devDependencies": {
-    "@commitlint/cli": "19.5.0",
-    "@commitlint/config-conventional": "19.5.0",
-    "@eslint/js": "9.13.0",
-    "@stylistic/eslint-plugin-js": "2.10.0",
-    "eslint": "9.13.0",
-    "globals": "15.11.0",
-    "husky": "9.1.6",
-    "mongodb-memory-server": "10.1.2",
-    "supertest": "7.0.0",
-    "vitest": "2.1.4"
-  },
-  "dependencies": {
-    "cors": "2.8.5",
-    "express": "4.21.1",
-    "mongoose": "8.7.3",
-    "swagger-ui-express": "5.0.1",
-    "uuid": "^11.0.2",
-    "yamljs": "0.3.0"
-  }
+    "name": "authotization-svc",
+    "version": "1.0.0",
+    "description": "Authorization microservice for medical consultation application. Handles the authorization of users for the entire application ",
+    "engines": {
+        "node": ">=22.0.0",
+        "npm": ">=10.9.0",
+        "yarn": "Yarn is not supported, please use npm",
+        "pnpm": "PNPM is not supported, please use npm"
+    },
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "start": "node --env-file=.env ./src/config/index.js",
+        "lint": "eslint . --max-warnings=0 --cache --cache-location node_modules/.cache/eslint",
+        "lint-fix": "eslint . --fix --max-warnings=0 --cache --cache-location node_modules/.cache/eslint",
+        "dev": "node --watch --env-file=.env ./src/config/index.js",
+        "test": "vitest",
+        "test:watch": "vitest --watch"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/FIS2425/authotization-svc.git"
+    },
+    "keywords": [
+        "microservice",
+        "MERN"
+    ],
+    "author": "alvarobernal2412",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/FIS2425/authotization-svc/issues"
+    },
+    "homepage": "https://github.com/FIS2425/authotization-svc#readme",
+    "devDependencies": {
+        "@commitlint/cli": "19.5.0",
+        "@commitlint/config-conventional": "19.5.0",
+        "@eslint/js": "9.13.0",
+        "@stylistic/eslint-plugin-js": "2.10.0",
+        "eslint": "9.13.0",
+        "globals": "15.11.0",
+        "husky": "9.1.6",
+        "mongodb-memory-server": "10.1.2",
+        "supertest": "7.0.0",
+        "vitest": "2.1.4"
+    },
+    "dependencies": {
+        "bycrypt": "5.0.1",
+        "cors": "2.8.5",
+        "express": "4.21.1",
+        "mongoose": "8.7.3",
+        "swagger-ui-express": "5.0.1",
+        "uuid": "^11.0.2",
+        "yamljs": "0.3.0"
+    }
 }
