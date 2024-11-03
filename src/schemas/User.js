@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { validate as uuidValidate, v4 as uuidv4 } from 'uuid';
 
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema(
   {
@@ -49,7 +49,7 @@ userSchema.pre('save', async function (next) {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = bcrypt.hash(this.password, salt);
+    const hashedPassword = await bcrypt.hash(this.password, salt);
     this.password = hashedPassword;
 
     next()
