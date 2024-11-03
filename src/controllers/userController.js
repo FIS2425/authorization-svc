@@ -41,4 +41,24 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = async (req, res) => { };
+export const logout = async (req, res) => {
+  res.clearCookie('token');
+  res.clearCookie('refreshToken');
+
+  const token = req.cookies.token;
+
+  if (!token) {
+    res.status(401).json({ message: 'Not logged in' });
+  } else {
+    try {
+      await AuthToken.deleteOne({
+        token: token
+      });
+      res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+      // Here token has probably expired. To the user it's the same as if it was deleted
+      console.log(error);
+      res.status(200).json({ message: 'Logout successful' });
+    }
+  }
+};

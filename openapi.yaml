@@ -56,6 +56,36 @@ paths:
           '500':
             $ref: '#/components/responses/ServerError'
 
+  /logout:
+    post:
+      summary: User Logout
+      description: Logs out a user by clearing authentication tokens.
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Successful logout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        '401':
+          description: Unauthorized - user is not logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not logged in"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 components:
   schemas:
     User:
