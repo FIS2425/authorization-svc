@@ -2,13 +2,70 @@ openapi: 3.0.0
 info:
   title: Authorization Microservice
   version: 1.0.0
-  description: Authorization microservice for medical consultation application. Handles the authorization of users for the entire application
+  description: Authorization microservice for medical consultation application. Handles the authorization of users for the entire application.
 
 servers:
   - url: http://localhost:3001
 
 paths:
-  # Aquí irán tus rutas
+  # Define your API routes here (e.g., for user registration, login, etc.)
 
 components:
-  # Aquí irán tus componentes reutilizables
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user. Defaults to a generated UUID.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          description: Unique name for the user.
+          example: "john_doe"
+        password:
+          type: string
+          description: Hashed password of the user.
+        roles:
+          type: array
+          description: List of roles assigned to the user.
+          items:
+            type: string
+            enum:
+              - admin
+              - clinicadmin
+              - doctor
+              - patient
+          default: ["patient"]
+          example: ["doctor", "clinicadmin"]
+        doctorid:
+          type: string
+          nullable: true
+          description: Identifier of the doctor if the user is a clinic doctor.
+          example: "doctor12345"
+        patientid:
+          type: string
+          nullable: true
+          description: Identifier of the patient if the user is associated with a patient record.
+          example: "patient12345"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user was created.
+          example: "2023-10-25T08:40:51.620Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user was last updated.
+          example: "2023-10-26T08:40:51.620Z"
+      required:
+        - name
+        - password
+        - roles
+      description: Schema for the User model, including fields for unique ID, name, password, role, and optional associations with patient and clinic.
+
+  securitySchemes:
+    # Define any security schemes if relevant (e.g., JWT authentication).
+
+  # Add other reusable components here (e.g., responses, request bodies).
