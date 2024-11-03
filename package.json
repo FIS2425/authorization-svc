@@ -45,7 +45,7 @@
         "vitest": "2.1.4"
     },
     "dependencies": {
-        "bycrypt": "5.0.1",
+        "bcrypt": "5.0.1",
         "cors": "2.8.5",
         "express": "4.21.1",
         "mongoose": "8.7.3",
