@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     },
     patientid: {
       type: String,
-    }
+    },
   },
   {
     timestamps: true,
@@ -64,7 +64,9 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {
     throw new Error(error);
-}
+  }
 };
 
-export default mongoose.model('User', userSchema);
+// Export the model, checking if it already exists
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+export default User;
