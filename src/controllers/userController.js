@@ -5,10 +5,10 @@ import redisClient from '../config/index.js';
 export const register = async (req, res) => { };
 
 export const login = async (req, res) => {
-  const { name, password } = req.body;
+  const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ name });
+    const user = await User.findOne({ username });
     if (await user.comparePassword(password)) {
       const authToken = await jwt.sign(
         {

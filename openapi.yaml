@@ -11,7 +11,7 @@ paths:
   /login:
       post:
         summary: User Login
-        description: Authenticates a user with their name and password.
+        description: Authenticates a user with their username and password.
         tags:
           - Authentication
         requestBody:
@@ -21,16 +21,16 @@ paths:
               schema:
                 type: object
                 properties:
-                  name:
+                  username:
                     type: string
-                    description: The user's unique username.
+                    description: The user's unique userusername.
                     example: "admin_user"
                   password:
                     type: string
                     description: The user's password.
                     example: "admin123"
                 required:
-                  - name
+                  - username
                   - password
         responses:
           '200':
@@ -96,9 +96,9 @@ components:
           format: uuid
           description: Unique identifier for the user. Defaults to a generated UUID.
           example: "550e8400-e29b-41d4-a716-446655440000"
-        name:
+        username:
           type: string
-          description: Unique name for the user.
+          description: Unique username for the user.
           example: "john_doe"
         password:
           type: string
@@ -136,10 +136,10 @@ components:
           description: Timestamp when the user was last updated.
           example: "2023-10-26T08:40:51.620Z"
       required:
-        - name
+        - username
         - password
         - roles
-      description: Schema for the User model, including fields for unique ID, name, password, role, and optional associations with patient and clinic.
+      description: Schema for the User model, including fields for unique ID, username, password, role, and optional associations with patient and clinic.
 
   securitySchemes:
     # Define any security schemes if relevant (e.g., JWT authentication).

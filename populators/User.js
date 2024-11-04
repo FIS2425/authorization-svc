@@ -19,33 +19,33 @@ const connectToDatabase = async () => {
 const sampleUsers = [
   {
     _id: uuidv4(),
-    name: 'admin_user',
+    username: 'admin_user',
     password: 'admin123', // This will be hashed before saving
     roles: ['admin'],
   },
   {
     _id: uuidv4(),
-    name: 'clinic_admin',
+    username: 'clinic_admin',
     password: 'clinicadmin123',
     roles: ['clinicadmin'],
     clinicid: 'clinic67890',
   },
   {
     _id: uuidv4(),
-    name: 'doctor_user',
+    username: 'doctor_user',
     password: 'doctor123',
     roles: ['doctor'],
   },
   {
     _id: uuidv4(),
-    name: 'patient_user',
+    username: 'patient_user',
     password: 'patient123',
     roles: ['patient'],
     patientid: 'patient12345',
   },
   {
     _id: uuidv4(),
-    name: 'multi_role_user',
+    username: 'multi_role_user',
     password: 'multiuser123',
     roles: ['doctor', 'clinicadmin'],
     doctorid: uuidv4(),
@@ -54,14 +54,14 @@ const sampleUsers = [
 
 async function populateUsers() {
   try {
-    // Delete sample users (unique username)
-    await User.deleteMany({ name: { $in: sampleUsers.map((user) => user.name) } });
+    // Delete sample users (unique userusername)
+    await User.deleteMany({ username: { $in: sampleUsers.map((user) => user.username) } });
 
     // Save each user with plain-text passwords (they will be hashed by the schema's pre-save hook)
     for (const userData of sampleUsers) {
       const user = new User(userData);
       await user.save();
-      console.log(`User ${user.name} created successfully`);
+      console.log(`User ${user.username} created successfully`);
     }
 
     console.log('All sample users have been created');

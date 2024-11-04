@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
         message: (props) => `${props.value} no es un UUID válido`,
       },
     },
-    name: {
+    username: {
       type: String,
       required: [true],
       unique: [true],
@@ -52,11 +52,11 @@ userSchema.pre('save', async function (next) {
     const hashedPassword = await bcrypt.hash(this.password, salt);
     this.password = hashedPassword;
 
-    next()
+    next();
   } catch (error) {
     next(error);
   }
-})
+});
 
 // Method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
@@ -64,7 +64,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {
     throw new Error(error);
-  }
 }
+};
 
 export default mongoose.model('User', userSchema);
