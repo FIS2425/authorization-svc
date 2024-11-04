@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  dragonfly:
+    restart: unless-stopped
+    image: ghcr.io/dragonflydb/dragonfly:latest
+    container_name: dragonfly
+    ports:
+      - '6379:6379'
+    networks:
+      - backend
+    volumes:
+      - dragonfly-data:/data/dragonfly
+
   mongodb:
     restart: unless-stopped
     image: mongo:latest
@@ -32,6 +43,7 @@ services:
 
 volumes:
   mongo-data:
+  dragonfly-data:
 
 networks:
   backend:
