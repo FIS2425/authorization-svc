@@ -13,7 +13,7 @@ const connectToDatabase = async () => {
     .catch((error) => {
       console.error('Error de conexión con MongoDB:', error.message);
     });
-}
+};
 
 // Sample user data
 const sampleUsers = [
