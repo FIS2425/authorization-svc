@@ -12,6 +12,7 @@ export default [
       '@stylistic/js/quotes': ['error', 'single', { avoidEscape: true }],
       '@stylistic/js/linebreak-style': ['error', 'unix'],
       '@stylistic/js/indent': ['error', 2],
+      '@stylistic/js/semi': ['error', 'always'],
     },
     languageOptions: {
       globals: {
@@ -20,5 +21,5 @@ export default [
       },
     },
   },
-  pluginJs.configs.recommended,
+pluginJs.configs.recommended,
 ];
