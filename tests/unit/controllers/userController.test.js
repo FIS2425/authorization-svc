@@ -4,7 +4,7 @@ import express from 'express';
 import * as userController from '../../../src/controllers/userController.js';
 import User from '../../../src/schemas/User.js';
 import jwt from 'jsonwebtoken';
-import redisClient from '../../../src/config/index.js';
+import redisClient from '../../../src/config/redis.js';
 
 vi.mock('../../../src/schemas/User.js');
 vi.mock('jsonwebtoken');

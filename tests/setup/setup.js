@@ -2,9 +2,9 @@ import { beforeAll, afterEach, afterAll } from 'vitest';
 import supertest from 'supertest';
 
 import * as db from './database';
-import configureApp from '../../src/api.js';
+import api from '../../src/api.js';
 
-const app = configureApp();
+const app = api();
 
 let server;
 let request;
@@ -15,13 +15,9 @@ beforeAll(async () => {
   request = supertest(server);
 });
 
-afterEach(async () => {
-  await db.clearDatabase();
-});
-
 afterAll(async () => {
   await db.closeDatabase();
-  server.close();
+  server;
 });
 
 export { request };

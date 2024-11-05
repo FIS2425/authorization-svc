@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import redisClient from '../../../src/config/index.js';
+import redisClient from '../../../src/config/redis.js';
 import * as userController from '../../../src/controllers/userController.js';
 import User from '../../../src/schemas/User.js';
 

@@ -1,6 +1,6 @@
 import User from '../schemas/User.js';
 import jwt from 'jsonwebtoken';
-import redisClient from '../config/index.js';
+import { redisClient } from '../config/redis.js';
 
 import logger from '../config/logger.js';
 
@@ -59,7 +59,7 @@ export const login = async (req, res) => {
     logger.error('Error when authenticating', {
       method: req.method,
       url: req.originalUrl,
-      content: req.body,
+      error: error,
     });
     res.status(401).json({ message: 'Invalid credentials' });
   }
