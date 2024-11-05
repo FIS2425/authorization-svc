@@ -40,8 +40,11 @@ services:
       - backend
     ports:
       - '3001:3001'
+    volumes:
+      - .:/authorization
 
 volumes:
+  authotization-svc:
   mongo-data:
   dragonfly-data:
 
