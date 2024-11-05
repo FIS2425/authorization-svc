@@ -19,7 +19,7 @@ export const login = async (req, res) => {
           userId: user._id.toString(),
           roles: user.roles,
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || 'secret',
         {
           expiresIn: process.env.JWT_EXPIRATION || 3600,
         },
@@ -28,7 +28,7 @@ export const login = async (req, res) => {
         {
           userId: user._id.toString(),
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || 'secret',
         {
           expiresIn: process.env.JWT_REFRESH_EXPIRATION || '7d',
         },
@@ -74,7 +74,7 @@ export const logout = async (req, res) => {
   if (!authToken) {
     res.status(401).json({ message: 'Not logged in' });
   } else {
-    const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+    const decoded = jwt.verify(authToken, process.env.JWT_SECRET || 'secret');
     const userId = decoded.userId;
     try {
       logger.info('User logged out ${ user.username }', {
