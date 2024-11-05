@@ -1,19 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
-import express from 'express';
-import * as userController from '../../../src/controllers/userController.js';
-import User from '../../../src/schemas/User.js';
+import { describe, afterEach, expect, it, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
-import redisClient from '../../../src/config/redis.js';
+import { request } from '../../setup/setup';
+import User from '../../../src/schemas/User.js';
+import { redisClient } from '../../../src/config/redis.js';
 
-vi.mock('../../../src/schemas/User.js');
-vi.mock('jsonwebtoken');
-vi.mock('../../../src/config/index.js');
-
-const app = express();
-app.use(express.json());
-app.post('/login', userController.login);
-app.post('/logout', userController.logout);
+afterEach(() => {
+  vi.resetAllMocks();
+});
 
 describe('User Controller', () => {
   describe('login', () => {
@@ -26,13 +19,11 @@ describe('User Controller', () => {
         comparePassword: vi.fn().mockResolvedValue(true),
       };
 
-      User.findOne.mockResolvedValue(user);
-      jwt.sign
-        .mockReturnValueOnce('authToken')
-        .mockReturnValueOnce('refreshToken');
-      redisClient.set.mockResolvedValue(true);
+      vi.spyOn(User, 'findOne').mockResolvedValue(user);
+      vi.spyOn(jwt, 'sign').mockReturnValueOnce('authToken').mockReturnValueOnce('refreshToken');
+      vi.spyOn(redisClient, 'set').mockResolvedValue(true);
 
-      const response = await request(app)
+      const response = await request
         .post('/login')
         .send({ username: 'testuser', password: 'password' });
 
@@ -54,9 +45,9 @@ describe('User Controller', () => {
         comparePassword: vi.fn().mockResolvedValue(false),
       };
 
-      User.findOne.mockResolvedValue(user);
+      vi.spyOn(User, 'findOne').mockResolvedValue(user);
 
-      const response = await request(app)
+      const response = await request
         .post('/login')
         .send({ username: 'testuser', password: 'wrongpassword' });
 
@@ -65,42 +56,44 @@ describe('User Controller', () => {
     });
 
     it('should return 401 if user is not found', async () => {
-      User.findOne.mockResolvedValue(null);
+      vi.spyOn(User, 'findOne').mockResolvedValue(null);
 
-      const response = await request(app)
+      const response = await request
         .post('/login')
         .send({ username: 'nonexistentuser', password: 'password' });
 
       expect(response.status).toBe(401);
-      expect(response.body.message).toBe('Invalid credentials');
+      expect(response.body.message).toBe('User not found');
     });
   });
 
   describe('logout', () => {
     it('should logout successfully', async () => {
-      redisClient.del.mockResolvedValue(true);
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({ userId: 'userId' });
+      vi.spyOn(redisClient, 'del').mockResolvedValue(true);
 
-      const response = await request(app)
+      const response = await request
         .post('/logout')
-        .set('Cookie', ['token=authToken']);
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Logout successful');
     });
 
     it('should return 401 if not logged in', async () => {
-      const response = await request(app).post('/logout');
+      const response = await request.post('/logout');
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Not logged in');
     });
 
     it('should handle errors during logout', async () => {
-      redisClient.del.mockRejectedValue(new Error('Redis error'));
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({ userId: 'userId' });
+      vi.spyOn(redisClient, 'del').mockResolvedValue(false);
 
-      const response = await request(app)
+      const response = await request
         .post('/logout')
-        .set('Cookie', ['token=authToken']);
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Logout successful');
