@@ -1,9 +1,8 @@
-import { beforeAll, afterEach, afterAll } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 
 import * as db from './database';
 import api from '../../src/api.js';
-
 const app = api();
 
 let server;
@@ -17,7 +16,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db.closeDatabase();
-  server;
+  server.close();
 });
 
 export { request };

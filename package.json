@@ -41,6 +41,7 @@
         "globals": "15.11.0",
         "husky": "9.1.6",
         "mongodb-memory-server": "10.1.2",
+        "redis-mock": "^0.56.3",
         "supertest": "7.0.0",
         "vitest": "2.1.4"
     },
