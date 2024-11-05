@@ -2,6 +2,8 @@ import User from '../schemas/User.js';
 import jwt from 'jsonwebtoken';
 import redisClient from '../config/index.js';
 
+import logger from '../config/logger.js';
+
 export const register = async (req, res) => { };
 
 export const login = async (req, res) => {
@@ -9,7 +11,9 @@ export const login = async (req, res) => {
 
   try {
     const user = await User.findOne({ username });
-    if (await user.comparePassword(password)) {
+    if (!user) {
+      res.status(401).json({ message: 'Invalid credentials' });
+    } else if (await user.comparePassword(password)) {
       const authToken = await jwt.sign(
         {
           userId: user._id.toString(),
@@ -37,12 +41,26 @@ export const login = async (req, res) => {
       res.cookie('token', authToken, { httpOnly: true });
       res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
+      logger.info(`User logged in: "${user.username}"`, {
+        method: req.method,
+        url: req.originalUrl,
+        userId: user._id.toString(),
+      });
       res.status(200).json({ message: 'Login successful' });
     } else {
+      logger.error('Invalid credentials', {
+        method: req.method,
+        url: req.originalUrl,
+        userId: user._id.toString(),
+      });
       res.status(401).json({ message: 'Invalid credentials' });
     }
   } catch (error) {
-    console.log(error);
+    logger.error('Error when authenticating', {
+      method: req.method,
+      url: req.originalUrl,
+      content: req.body,
+    });
     res.status(401).json({ message: 'Invalid credentials' });
   }
 };
@@ -56,12 +74,29 @@ export const logout = async (req, res) => {
   if (!authToken) {
     res.status(401).json({ message: 'Not logged in' });
   } else {
+    const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+    const userId = decoded.userId;
     try {
+      logger.info('User logged out ${ user.username }', {
+        method: req.method,
+        url: req.originalUrl,
+        userId: userId,
+      });
       redisClient.del(authToken);
+      logger.info('Token revoked', {
+        method: req.method,
+        url: req.originalUrl,
+        userId: userId,
+      });
+
       res.status(200).json({ message: 'Logout successful' });
     } catch (error) {
       // Here token has probably expired. To the user it's the same as if it was deleted
-      console.log(error);
+      logger.info('Token expired', {
+        method: req.method,
+        url: req.originalUrl,
+        userId: userId,
+      });
       res.status(200).json({ message: 'Logout successful' });
     }
   }
