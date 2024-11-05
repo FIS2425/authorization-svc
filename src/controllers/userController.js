@@ -12,7 +12,7 @@ export const login = async (req, res) => {
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'User not found' });
     } else if (await user.comparePassword(password)) {
       const authToken = await jwt.sign(
         {
@@ -61,7 +61,7 @@ export const login = async (req, res) => {
       url: req.originalUrl,
       error: error,
     });
-    res.status(401).json({ message: 'Invalid credentials' });
+    res.status(500).json({ message: 'Error when authenticating' });
   }
 };
 
