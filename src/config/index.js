@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import api from '../api.js';
+import initializeRedis from './redis.js';
 
 const MONGO_URI = process.env.MONGOURL;
 const PORT = process.env.PORT || 3001;
+
 
 mongoose
   .connect(MONGO_URI)
@@ -10,6 +12,8 @@ mongoose
     console.log('Conexión con MongoDB OK');
 
     const app = api();
+
+    initializeRedis();
 
     app.listen(PORT, () => {
       console.log(`Servidor escuchando en http://localhost:${PORT}`);

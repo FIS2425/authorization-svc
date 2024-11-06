@@ -14,9 +14,6 @@ migrations
 # Seeders
 seeders
 
-# config
-config
-
 # Mac files
 .DS_Store
 

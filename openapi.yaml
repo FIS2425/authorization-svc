@@ -8,7 +8,83 @@ servers:
   - url: http://localhost:3001
 
 paths:
-  # Define your API routes here (e.g., for user registration, login, etc.)
+  /login:
+      post:
+        summary: User Login
+        description: Authenticates a user with their username and password.
+        tags:
+          - Authentication
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    description: The user's unique userusername.
+                    example: "admin_user"
+                  password:
+                    type: string
+                    description: The user's password.
+                    example: "admin123"
+                required:
+                  - username
+                  - password
+        responses:
+          '200':
+            description: Successful login
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Login successful"
+          '401':
+            description: Unauthorized - invalid credentials
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Invalid credentials"
+          '500':
+            $ref: '#/components/responses/ServerError'
+
+  /logout:
+    post:
+      summary: User Logout
+      description: Logs out a user by clearing authentication tokens.
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Successful logout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        '401':
+          description: Unauthorized - user is not logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not logged in"
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
   schemas:
@@ -20,9 +96,9 @@ components:
           format: uuid
           description: Unique identifier for the user. Defaults to a generated UUID.
           example: "550e8400-e29b-41d4-a716-446655440000"
-        name:
+        username:
           type: string
-          description: Unique name for the user.
+          description: Unique username for the user.
           example: "john_doe"
         password:
           type: string
@@ -60,12 +136,23 @@ components:
           description: Timestamp when the user was last updated.
           example: "2023-10-26T08:40:51.620Z"
       required:
-        - name
+        - username
         - password
         - roles
-      description: Schema for the User model, including fields for unique ID, name, password, role, and optional associations with patient and clinic.
+      description: Schema for the User model, including fields for unique ID, username, password, role, and optional associations with patient and clinic.
 
   securitySchemes:
     # Define any security schemes if relevant (e.g., JWT authentication).
 
   # Add other reusable components here (e.g., responses, request bodies).
+  responses:
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Server error"

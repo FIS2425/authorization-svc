@@ -1,10 +1,9 @@
-import { beforeAll, afterEach, afterAll } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
 
 import * as db from './database';
-import configureApp from '../../src/api.js';
-
-const app = configureApp();
+import api from '../../src/api.js';
+const app = api();
 
 let server;
 let request;
@@ -13,10 +12,6 @@ beforeAll(async () => {
   await db.connect();
   server = app.listen(0);
   request = supertest(server);
-});
-
-afterEach(async () => {
-  await db.clearDatabase();
 });
 
 afterAll(async () => {

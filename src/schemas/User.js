@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
         message: (props) => `${props.value} no es un UUID válido`,
       },
     },
-    name: {
+    username: {
       type: String,
       required: [true],
       unique: [true],
@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true],
     },
-    role: {
+    roles: {
       type: [String],
       required: [true],
       enum: ['admin', 'clinicadmin', 'doctor', 'patient'],
@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     },
     patientid: {
       type: String,
-    }
+    },
   },
   {
     timestamps: true,
@@ -52,11 +52,11 @@ userSchema.pre('save', async function (next) {
     const hashedPassword = await bcrypt.hash(this.password, salt);
     this.password = hashedPassword;
 
-    next()
+    next();
   } catch (error) {
     next(error);
   }
-})
+});
 
 // Method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
@@ -65,6 +65,8 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   } catch (error) {
     throw new Error(error);
   }
-}
+};
 
-export default mongoose.model('User', userSchema);
+// Export the model, checking if it already exists
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+export default User;

@@ -41,14 +41,18 @@
         "globals": "15.11.0",
         "husky": "9.1.6",
         "mongodb-memory-server": "10.1.2",
+        "redis-mock": "^0.56.3",
         "supertest": "7.0.0",
         "vitest": "2.1.4"
     },
     "dependencies": {
         "bcrypt": "5.1.1",
+        "cookie-parser": "^1.4.7",
         "cors": "2.8.5",
         "express": "4.21.1",
+        "jsonwebtoken": "^9.0.2",
         "mongoose": "8.8.0",
+        "redis": "4.7.0",
         "swagger-ui-express": "5.0.1",
         "uuid": "11.0.2",
         "winston": "3.16.0",
