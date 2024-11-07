@@ -8,53 +8,179 @@ servers:
   - url: http://localhost:3001
 
 paths:
-  /login:
-      post:
-        summary: User Login
-        description: Authenticates a user with their username and password.
-        tags:
-          - Authentication
-        requestBody:
-          required: true
+  /users:
+    post:
+      summary: Create a new user
+      description: Creates a new user in the system. Only users with the "clinicadmin" role are authorized to create new users.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username for the new user.
+                  example: "new_user"
+                password:
+                  type: string
+                  description: The password for the new user.
+                  example: "new_password123"
+                roles:
+                  type: array
+                  description: The roles assigned to the new user.
+                  items:
+                    type: string
+                    enum:
+                      - admin
+                      - clinicadmin
+                      - doctor
+                      - patient
+                  example: ["doctor"]
+                doctorid:
+                  type: string
+                  description: The ID of the doctor associated with the user, if applicable.
+                  example: "doctor12345"
+                patientid:
+                  type: string
+                  description: The ID of the patient associated with the user, if applicable.
+                  example: "patient12345"
+              required:
+                - username
+                - password
+                - roles
+      responses:
+        '201':
+          description: User created successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  _id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the created user.
+                    example: "550e8400-e29b-41d4-a716-446655440000"
                   username:
                     type: string
-                    description: The user's unique userusername.
-                    example: "admin_user"
-                  password:
+                    description: The username of the created user.
+                    example: "new_user"
+                  roles:
+                    type: array
+                    description: The roles assigned to the created user.
+                    items:
+                      type: string
+                      enum:
+                        - admin
+                        - clinicadmin
+                        - doctor
+                        - patient
+                    example: ["doctor"]
+                  doctorid:
                     type: string
-                    description: The user's password.
-                    example: "admin123"
-                required:
-                  - username
-                  - password
-        responses:
-          '200':
-            description: Successful login
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: "Login successful"
-          '401':
-            description: Unauthorized - invalid credentials
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: "Invalid credentials"
-          '500':
-            $ref: '#/components/responses/ServerError'
+                    nullable: true
+                    description: The doctor ID associated with the user.
+                    example: "doctor12345"
+                  patientid:
+                    type: string
+                    nullable: true
+                    description: The patient ID associated with the user.
+                    example: "patient12345"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the user was created.
+                    example: "2023-10-25T08:40:51.620Z"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the user was last updated.
+                    example: "2023-10-26T08:40:51.620Z"
+        '400':
+          description: Bad Request - Missing required fields or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Username and password are required fields."
+        '401':
+          description: Unauthorized - No authentication token found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You must be logged in to create a new user."
+        '403':
+          description: Forbidden - Insufficient permissions to create a user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You do not have permission to create a new user. Only clinic administrators can create new users."
+        '500':
+          $ref: '#/components/responses/ServerError'
+      
+
+  /login:
+    post:
+      summary: User Login
+      description: Authenticates a user with their username and password.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The user's unique username.
+                  example: "admin_user"
+                password:
+                  type: string
+                  description: The user's password.
+                  example: "admin123"
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+        '401':
+          description: Unauthorized - invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid credentials"
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /logout:
     post:
