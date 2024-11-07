@@ -10,13 +10,22 @@ const userSchema = new mongoose.Schema(
       default: () => uuidv4(),
       validate: {
         validator: uuidValidate,
-        message: (props) => `${props.value} no es un UUID válido`,
+        message: (props) => `${props.value} is not a valid UUID`,
       },
     },
     username: {
       type: String,
       required: [true],
       unique: [true],
+    },
+    email: {
+      type: String,
+      required: [true],
+      unique: [true],
+      match: [
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        'Invalid email address',
+      ],
     },
     password: {
       type: String,

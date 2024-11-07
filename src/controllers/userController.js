@@ -6,12 +6,16 @@ import logger from '../config/logger.js';
 
 export const createUser = async (req, res) => {
   try {
-    const { username, password, roles, doctorid, patientid } = req.body;
+    const { username, email, password, roles, doctorid, patientid } = req.body;
 
     const errors = {};
 
     if (!username) {
       errors.username = 'Username is required';
+    }
+
+    if (!email) {
+      errors.email = 'Email is required';
     }
 
     if (!password) {
@@ -42,8 +46,23 @@ export const createUser = async (req, res) => {
       });
     }
 
+    const existingUserEmail = await User.findOne({ email });
+
+    if (existingUserEmail) {
+      logger.warn('User already exists', {
+        method: req.method,
+        url: req.originalUrl,
+        email,
+        ip: req.ip,
+      });
+      return res.status(400).json({
+        message: 'A user with that email already exists.',
+      });
+    }
+
     const newUser = new User({
       username,
+      email,
       password,
       roles,
       doctorid,
@@ -66,13 +85,16 @@ export const createUser = async (req, res) => {
     res.status(201).json(userWithoutPassword);
   } catch (error) {
     if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err) => err.message);
+
       logger.error('Validation error creating user', {
         method: req.method,
         url: req.originalUrl,
-        error: error.message,
+        error: errors,
         ip: req.ip,
       });
-      return res.status(400).json({ message: error.message });
+
+      return res.status(400).json({ messages: errors });
     }
     logger.error('Error creating user', {
       method: req.method,
