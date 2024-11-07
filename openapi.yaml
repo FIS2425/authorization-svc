@@ -10,10 +10,12 @@ servers:
 paths:
   /users:
     post:
-      summary: Create a new user
-      description: Creates a new user in the system. Only users with the "clinicadmin" role are authorized to create new users.
+      summary: Create User
+      description: Creates a new user with specified roles, email, and associated IDs for doctor or patient.
       tags:
         - Users
+      security:
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -23,35 +25,36 @@ paths:
               properties:
                 username:
                   type: string
-                  description: The username for the new user.
+                  description: Unique username for the user.
                   example: "new_user"
+                email:
+                  type: string
+                  description: Email address of the user.
+                  example: "new_user@example.com"
                 password:
                   type: string
-                  description: The password for the new user.
-                  example: "new_password123"
+                  description: User's password.
+                  example: "securepassword123"
                 roles:
                   type: array
-                  description: The roles assigned to the new user.
+                  description: List of roles assigned to the user.
                   items:
                     type: string
-                    enum:
-                      - admin
-                      - clinicadmin
-                      - doctor
-                      - patient
-                  example: ["doctor"]
+                  example: ["admin", "doctor"]
                 doctorid:
                   type: string
-                  description: The ID of the doctor associated with the user, if applicable.
-                  example: "doctor12345"
+                  description: Unique ID if the user is a doctor.
+                  example: "doctor123"
+                  nullable: true
                 patientid:
                   type: string
-                  description: The ID of the patient associated with the user, if applicable.
-                  example: "patient12345"
+                  description: Unique ID if the user is a patient.
+                  example: "patient456"
+                  nullable: true
               required:
                 - username
+                - email
                 - password
-                - roles
       responses:
         '201':
           description: User created successfully
@@ -60,58 +63,38 @@ paths:
               schema:
                 type: object
                 properties:
-                  _id:
-                    type: string
-                    format: uuid
-                    description: Unique identifier for the created user.
-                    example: "550e8400-e29b-41d4-a716-446655440000"
                   username:
                     type: string
-                    description: The username of the created user.
                     example: "new_user"
+                  email:
+                    type: string
+                    example: "new_user@example.com"
                   roles:
                     type: array
-                    description: The roles assigned to the created user.
                     items:
                       type: string
-                      enum:
-                        - admin
-                        - clinicadmin
-                        - doctor
-                        - patient
-                    example: ["doctor"]
+                    example: ["admin", "doctor"]
                   doctorid:
                     type: string
+                    example: "doctor123"
                     nullable: true
-                    description: The doctor ID associated with the user.
-                    example: "doctor12345"
                   patientid:
                     type: string
+                    example: "patient456"
                     nullable: true
-                    description: The patient ID associated with the user.
-                    example: "patient12345"
-                  createdAt:
-                    type: string
-                    format: date-time
-                    description: Timestamp when the user was created.
-                    example: "2023-10-25T08:40:51.620Z"
-                  updatedAt:
-                    type: string
-                    format: date-time
-                    description: Timestamp when the user was last updated.
-                    example: "2023-10-26T08:40:51.620Z"
         '400':
-          description: Bad Request - Missing required fields or invalid data
+          description: Bad request - missing fields or user already exists
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Username and password are required fields."
+                additionalProperties:
+                  type: string
+                example:
+                  username: "Username is required"
+                  password: "Password is required"
         '401':
-          description: Unauthorized - No authentication token found
+          description: Unauthorized - token missing or invalid
           content:
             application/json:
               schema:
@@ -119,9 +102,9 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "You must be logged in to create a new user."
+                    example: "No token provided"
         '403':
-          description: Forbidden - Insufficient permissions to create a user
+          description: Forbidden - insufficient permissions
           content:
             application/json:
               schema:
@@ -129,10 +112,9 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "You do not have permission to create a new user. Only clinic administrators can create new users."
+                    example: "Unauthorized"
         '500':
           $ref: '#/components/responses/ServerError'
-      
 
   /login:
     post:
@@ -268,6 +250,10 @@ components:
       description: Schema for the User model, including fields for unique ID, username, password, role, and optional associations with patient and clinic.
 
   securitySchemes:
+    cookieAuth:
+        type: apiKey
+        in: cookie
+        name: token
     # Define any security schemes if relevant (e.g., JWT authentication).
 
   # Add other reusable components here (e.g., responses, request bodies).
