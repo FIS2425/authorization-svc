@@ -6,34 +6,6 @@ import logger from '../config/logger.js';
 
 export const createUser = async (req, res) => {
   try {
-    const authToken = req.cookies.token;
-
-    if (!authToken) {
-      logger.warn('No authentication token found', {
-        method: req.method,
-        url: req.originalUrl,
-        ip: req.ip,
-      });
-      return res
-        .status(401)
-        .json({ message: 'You must be logged in to create a new user.' });
-    }
-
-    const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
-
-    if (!decoded.roles.includes('clinicadmin')) {
-      logger.warn('Permission denied: User does not have clinicadmin role', {
-        method: req.method,
-        url: req.originalUrl,
-        userId: decoded.userId,
-        ip: req.ip,
-      });
-      return res.status(403).json({
-        message:
-          'You do not have permission to create a new user. Only clinic administrators can create new users.',
-      });
-    }
-
     const { username, password, roles, doctorid, patientid } = req.body;
 
     if (!username || !password) {
