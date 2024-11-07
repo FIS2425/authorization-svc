@@ -1,4 +1,4 @@
-import logger from '../utils/logger';
+import logger from '../config/logger.js';
 
 export const validate = async (req, res) => {
   // At this point the token has been validated by the middleware
