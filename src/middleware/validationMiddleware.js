@@ -28,7 +28,7 @@ export const validateToken = async (req, res, next) => {
     const tokenValid = await redisClient.exists(token);
 
     if (!tokenValid) {
-      logger.warn('Invalid token', {
+      logger.warn('Token expired', {
         method: req.method,
         url: req.originalUrl,
         ip: req.ip,
@@ -38,11 +38,20 @@ export const validateToken = async (req, res, next) => {
 
     next();
   } catch (error) {
-    logger.error('Error on token validation', {
-      method: req.method,
-      url: req.originalUrl,
-      error: error,
-    });
-    return res.status(401).json({ message: 'Invalid token' });
+    if (error instanceof jwt.TokenExpiredError) {
+      logger.error('Error on token validation', {
+        method: req.method,
+        url: req.originalUrl,
+        error: error,
+      });
+      return res.status(401).json({ message: 'Token expired' });
+    } else {
+      logger.error('Error on token validation', {
+        method: req.method,
+        url: req.originalUrl,
+        error: error,
+      });
+      return res.status(401).json({ message: 'Invalid token' });
+    }
   }
 };

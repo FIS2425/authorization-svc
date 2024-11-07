@@ -50,6 +50,25 @@ describe('Validation Middleware', () => {
     });
 
     it('should return 401 with token expired', async () => {
+      const mockToken = 'expiredToken';
+
+      const req = { cookies: { token: mockToken } };
+      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+      const next = vi.fn();
+
+      vi.spyOn(jwt, 'verify').mockImplementation(() => {
+        throw new jwt.TokenExpiredError('jwt expired', new Date());
+      });
+
+      await validateToken(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Token expired' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+
+    it('should return 401 with token expired in dragonfly', async () => {
       const mockUser = {
         _id: 'userId',
         username: 'testuser',
