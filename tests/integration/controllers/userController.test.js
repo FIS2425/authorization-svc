@@ -8,6 +8,7 @@ import { redisClient } from '../../../src/config/redis.js';
 const sampleUser = new User({
   _id: uuidv4(),
   username: 'testuser',
+  email: 'testuser@test.com',
   password: 'password',
   roles: ['patient'],
 });
@@ -16,7 +17,6 @@ beforeAll(async () => {
   await db.clearDatabase();
   await sampleUser.save();
 });
-
 
 afterAll(async () => {
   await db.clearDatabase();
@@ -27,8 +27,7 @@ describe('User Controller Integration Tests', () => {
     it('should login successfully with valid credentials', async () => {
       const response = await request
         .post('/login')
-        .send({ username: 'testuser', password: 'password' }
-        );
+        .send({ username: 'testuser', password: 'password' });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
@@ -67,9 +66,7 @@ describe('User Controller Integration Tests', () => {
 
       const cookies = loginResponse.headers['set-cookie'];
 
-      const response = await request
-        .post('/logout')
-        .set('Cookie', cookies);
+      const response = await request.post('/logout').set('Cookie', cookies);
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Logout successful');
@@ -91,9 +88,7 @@ describe('User Controller Integration Tests', () => {
 
       vi.spyOn(redisClient, 'del').mockRejectedValue(new Error('Redis error'));
 
-      const response = await request
-        .post('/logout')
-        .set('Cookie', cookies);
+      const response = await request.post('/logout').set('Cookie', cookies);
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Logout successful');
