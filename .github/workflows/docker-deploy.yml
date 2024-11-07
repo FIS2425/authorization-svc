@@ -13,7 +13,6 @@ on:
       - develop
     types:
       - labeled
-      - synchronize
 
 env:
   REGISTRY_IMAGE: ${{ secrets.DOCKER_USERNAME }}/authorization
