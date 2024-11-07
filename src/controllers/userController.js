@@ -8,15 +8,24 @@ export const createUser = async (req, res) => {
   try {
     const { username, password, roles, doctorid, patientid } = req.body;
 
-    if (!username || !password) {
-      logger.warn('Missing required fields: username or password', {
+    const errors = {};
+
+    if (!username) {
+      errors.username = 'Username is required';
+    }
+
+    if (!password) {
+      errors.password = 'Password is required';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      logger.warn('Missing required fields', {
         method: req.method,
         url: req.originalUrl,
         ip: req.ip,
+        errors,
       });
-      return res.status(400).json({
-        message: 'Username and password are required fields.',
-      });
+      return res.status(400).json(errors);
     }
 
     const existingUser = await User.findOne({ username });
