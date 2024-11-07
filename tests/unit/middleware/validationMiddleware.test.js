@@ -23,7 +23,7 @@ describe('Validation Middleware', () => {
 
       vi.spyOn(jwt, 'verify').mockReturnValueOnce(mockDecoded);
       vi.spyOn(User, 'findById').mockResolvedValue(mockUser);
-      vi.spyOn(redisClient, 'get').mockResolvedValue(true);
+      vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
 
       const req = { cookies: { token: mockToken } };
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
@@ -33,7 +33,7 @@ describe('Validation Middleware', () => {
 
       expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET || process.env.VITE_JWT_SECRET);
       expect(User.findById).toHaveBeenCalledWith(mockDecoded.userId);
-      expect(redisClient.get).toHaveBeenCalledWith(mockToken);
+      expect(redisClient.exists).toHaveBeenCalledWith(mockToken);
       expect(next).toHaveBeenCalled();
     });
 
@@ -66,7 +66,7 @@ describe('Validation Middleware', () => {
 
       vi.spyOn(jwt, 'verify').mockReturnValueOnce(mockDecoded);
       vi.spyOn(User, 'findById').mockResolvedValue(mockUser);
-      vi.spyOn(redisClient, 'get').mockResolvedValue(false);
+      vi.spyOn(redisClient, 'exists').mockResolvedValue(false);
 
       await validateToken(req, res, next);
 
@@ -85,7 +85,7 @@ describe('Validation Middleware', () => {
 
       vi.spyOn(jwt, 'verify').mockReturnValueOnce(mockDecoded);
       vi.spyOn(User, 'findById').mockResolvedValue(null);
-      vi.spyOn(redisClient, 'get').mockResolvedValue(false);
+      vi.spyOn(redisClient, 'exists').mockResolvedValue(false);
 
       await validateToken(req, res, next);
 

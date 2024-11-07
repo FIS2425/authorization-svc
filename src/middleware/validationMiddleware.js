@@ -25,7 +25,7 @@ export const validateToken = async (req, res, next) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    const tokenValid = await redisClient.get(token);
+    const tokenValid = await redisClient.exists(token);
 
     if (!tokenValid) {
       logger.warn('Invalid token', {
