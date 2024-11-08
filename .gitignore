@@ -19,3 +19,6 @@ seeders
 
 # Logs
 logs
+
+# Coverage
+coverage

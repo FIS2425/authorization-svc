@@ -11,6 +11,9 @@ export default defineConfig({
     setupFiles: './tests/setup/setup.js',
     testMatch: ['**/*.test.js'],
     isolate: true,
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+    },
   },
   resolve: {
     alias: {
