@@ -13,7 +13,7 @@ describe('Validation Middleware', () => {
     it('should validate the token successfully', async () => {
       const mockUser = {
         _id: 'userId',
-        username: 'testuser',
+        email: 'testuser@mail.com',
         password: 'password',
         roles: ['user'],
         comparePassword: vi.fn().mockResolvedValue(true),
@@ -71,7 +71,7 @@ describe('Validation Middleware', () => {
     it('should return 401 with token expired in dragonfly', async () => {
       const mockUser = {
         _id: 'userId',
-        username: 'testuser',
+        email: 'testuser@mail.com',
         password: 'password',
         roles: ['user'],
         comparePassword: vi.fn().mockResolvedValue(true),

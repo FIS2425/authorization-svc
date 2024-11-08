@@ -8,53 +8,153 @@ servers:
   - url: http://localhost:3001
 
 paths:
-  /login:
-      post:
-        summary: User Login
-        description: Authenticates a user with their username and password.
-        tags:
-          - Authentication
-        requestBody:
-          required: true
+  /users:
+    post:
+      summary: Create User
+      description: Creates a new user with specified roles, email, and associated IDs for doctor or patient.
+      tags:
+        - Users
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email address of the user.
+                  example: "new_user@example.com"
+                password:
+                  type: string
+                  description: User's password.
+                  example: "securepassword123"
+                roles:
+                  type: array
+                  description: List of roles assigned to the user.
+                  items:
+                    type: string
+                  example: ["admin", "doctor"]
+                doctorid:
+                  type: string
+                  description: Unique ID if the user is a doctor.
+                  example: "doctor123"
+                  nullable: true
+                patientid:
+                  type: string
+                  description: Unique ID if the user is a patient.
+                  example: "patient456"
+                  nullable: true
+              required:
+                - email
+                - password
+      responses:
+        '201':
+          description: User created successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  username:
+                  email:
                     type: string
-                    description: The user's unique userusername.
-                    example: "admin_user"
-                  password:
+                    example: "new_user@example.com"
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    example: ["admin", "doctor"]
+                  doctorid:
                     type: string
-                    description: The user's password.
-                    example: "admin123"
-                required:
-                  - username
-                  - password
-        responses:
-          '200':
-            description: Successful login
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: "Login successful"
-          '401':
-            description: Unauthorized - invalid credentials
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: "Invalid credentials"
-          '500':
-            $ref: '#/components/responses/ServerError'
+                    example: "doctor123"
+                    nullable: true
+                  patientid:
+                    type: string
+                    example: "patient456"
+                    nullable: true
+        '400':
+          description: Bad request - missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  email: "Email is required"
+                  password: "Password is required"
+        '401':
+          description: Unauthorized - token missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No token provided"
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /login:
+    post:
+      summary: User Login
+      description: Authenticates a user with their email and password.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The user's unique email.
+                  example: "admin@email.com"
+                password:
+                  type: string
+                  description: The user's password.
+                  example: "admin123"
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+        '401':
+          description: Unauthorized - invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid credentials"
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /logout:
     post:
@@ -125,10 +225,10 @@ components:
           format: uuid
           description: Unique identifier for the user. Defaults to a generated UUID.
           example: "550e8400-e29b-41d4-a716-446655440000"
-        username:
+        email:
           type: string
-          description: Unique username for the user.
-          example: "john_doe"
+          description: Unique email for the user.
+          example: "john_doe@email.com"
         password:
           type: string
           description: Hashed password of the user.
@@ -165,12 +265,16 @@ components:
           description: Timestamp when the user was last updated.
           example: "2023-10-26T08:40:51.620Z"
       required:
-        - username
+        - email
         - password
         - roles
-      description: Schema for the User model, including fields for unique ID, username, password, role, and optional associations with patient and clinic.
+      description: Schema for the User model, including fields for unique ID, email, password, role, and optional associations with patient and clinic.
 
   securitySchemes:
+    cookieAuth:
+        type: apiKey
+        in: cookie
+        name: token
     # Define any security schemes if relevant (e.g., JWT authentication).
 
   # Add other reusable components here (e.g., responses, request bodies).

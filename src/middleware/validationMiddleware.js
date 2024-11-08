@@ -10,7 +10,10 @@ export const validateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || process.env.VITE_JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || process.env.VITE_JWT_SECRET
+    );
     req.userId = decoded.userId;
 
     const user = await User.findById(req.userId);
