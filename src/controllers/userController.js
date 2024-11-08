@@ -21,7 +21,7 @@ export const login = async (req, res) => {
         },
         process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
         {
-          expiresIn: process.env.JWT_EXPIRATION || 3600,
+          expiresIn: parseInt(process.env.JWT_EXPIRATION) || 3600,
         },
       );
       const refreshToken = await jwt.sign(
@@ -30,7 +30,7 @@ export const login = async (req, res) => {
         },
         process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
         {
-          expiresIn: process.env.JWT_REFRESH_EXPIRATION || '7d',
+          expiresIn: parseInt(process.env.JWT_REFRESH_EXPIRATION) || '7d',
         },
       );
 
