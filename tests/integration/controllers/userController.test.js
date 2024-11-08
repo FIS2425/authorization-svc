@@ -7,7 +7,6 @@ import { redisClient } from '../../../src/config/redis.js';
 
 const sampleUser = new User({
   _id: uuidv4(),
-  username: 'testuser',
   email: 'testuser@test.com',
   password: 'password',
   roles: ['patient'],
@@ -27,7 +26,7 @@ describe('User Controller Integration Tests', () => {
     it('should login successfully with valid credentials', async () => {
       const response = await request
         .post('/login')
-        .send({ username: 'testuser', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'password' });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
@@ -42,7 +41,7 @@ describe('User Controller Integration Tests', () => {
     it('should return 401 with invalid credentials', async () => {
       const response = await request
         .post('/login')
-        .send({ username: 'testuser', password: 'wrongpassword' });
+        .send({ email: 'testuser@test.com', password: 'wrongpassword' });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Invalid credentials');
@@ -51,7 +50,7 @@ describe('User Controller Integration Tests', () => {
     it('should return 401 if user is not found', async () => {
       const response = await request
         .post('/login')
-        .send({ username: 'nonexistentuser', password: 'password' });
+        .send({ email: 'nonexistentuser@test.com', password: 'password' });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('User not found');
@@ -62,7 +61,7 @@ describe('User Controller Integration Tests', () => {
     it('should logout successfully', async () => {
       const loginResponse = await request
         .post('/login')
-        .send({ username: 'testuser', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'password' });
 
       const cookies = loginResponse.headers['set-cookie'];
 
@@ -82,7 +81,7 @@ describe('User Controller Integration Tests', () => {
     it('should handle errors during logout', async () => {
       const loginResponse = await request
         .post('/login')
-        .send({ username: 'testuser', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'password' });
 
       const cookies = loginResponse.headers['set-cookie'];
 

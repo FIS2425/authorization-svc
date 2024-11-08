@@ -6,13 +6,9 @@ import logger from '../config/logger.js';
 
 export const createUser = async (req, res) => {
   try {
-    const { username, email, password, roles, doctorid, patientid } = req.body;
+    const { email, password, roles, doctorid, patientid } = req.body;
 
     const errors = {};
-
-    if (!username) {
-      errors.username = 'Username is required';
-    }
 
     if (!email) {
       errors.email = 'Email is required';
@@ -32,20 +28,6 @@ export const createUser = async (req, res) => {
       return res.status(400).json(errors);
     }
 
-    const existingUser = await User.findOne({ username });
-
-    if (existingUser) {
-      logger.warn('User already exists', {
-        method: req.method,
-        url: req.originalUrl,
-        username,
-        ip: req.ip,
-      });
-      return res.status(400).json({
-        message: 'A user with that username already exists.',
-      });
-    }
-
     const existingUserEmail = await User.findOne({ email });
 
     if (existingUserEmail) {
@@ -61,7 +43,6 @@ export const createUser = async (req, res) => {
     }
 
     const newUser = new User({
-      username,
       email,
       password,
       roles,
@@ -77,7 +58,7 @@ export const createUser = async (req, res) => {
     logger.info('User created successfully', {
       method: req.method,
       url: req.originalUrl,
-      username: newUser.username,
+      email: newUser.email,
       userId: newUser._id.toString(),
       ip: req.ip,
     });
@@ -109,10 +90,10 @@ export const createUser = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if (!user) {
       res.status(401).json({ message: 'User not found' });
     } else if (await user.comparePassword(password)) {
@@ -147,7 +128,7 @@ export const login = async (req, res) => {
       res.cookie('token', authToken, { httpOnly: true });
       res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
-      logger.info(`User logged in: "${user.username}"`, {
+      logger.info(`User logged in: "${user.email}"`, {
         method: req.method,
         url: req.originalUrl,
         userId: user._id.toString(),
@@ -186,7 +167,7 @@ export const logout = async (req, res) => {
     );
     const userId = decoded.userId;
     try {
-      logger.info('User logged out ${ user.username }', {
+      logger.info('User logged out ${ user.email }', {
         method: req.method,
         url: req.originalUrl,
         userId: userId,

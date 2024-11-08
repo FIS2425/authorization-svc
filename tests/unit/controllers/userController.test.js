@@ -13,19 +13,21 @@ describe('User Controller', () => {
     it('should login successfully with valid credentials', async () => {
       const user = {
         _id: 'userId',
-        username: 'testuser',
+        email: 'testuser@test.com',
         password: 'password',
         roles: ['user'],
         comparePassword: vi.fn().mockResolvedValue(true),
       };
 
       vi.spyOn(User, 'findOne').mockResolvedValue(user);
-      vi.spyOn(jwt, 'sign').mockReturnValueOnce('authToken').mockReturnValueOnce('refreshToken');
+      vi.spyOn(jwt, 'sign')
+        .mockReturnValueOnce('authToken')
+        .mockReturnValueOnce('refreshToken');
       vi.spyOn(redisClient, 'set').mockResolvedValue(true);
 
       const response = await request
         .post('/login')
-        .send({ username: 'testuser', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'password' });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
@@ -40,7 +42,7 @@ describe('User Controller', () => {
     it('should return 401 with invalid credentials', async () => {
       const user = {
         _id: 'userId',
-        username: 'testuser',
+        email: 'testuser@test.com',
         password: 'password',
         comparePassword: vi.fn().mockResolvedValue(false),
       };
@@ -49,7 +51,7 @@ describe('User Controller', () => {
 
       const response = await request
         .post('/login')
-        .send({ username: 'testuser', password: 'wrongpassword' });
+        .send({ email: 'testuser@test.com', password: 'wrongpassword' });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Invalid credentials');
@@ -60,7 +62,7 @@ describe('User Controller', () => {
 
       const response = await request
         .post('/login')
-        .send({ username: 'nonexistentuser', password: 'password' });
+        .send({ email: 'nonexistentuser@test.com', password: 'password' });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('User not found');

@@ -13,11 +13,6 @@ const userSchema = new mongoose.Schema(
         message: (props) => `${props.value} is not a valid UUID`,
       },
     },
-    username: {
-      type: String,
-      required: [true],
-      unique: [true],
-    },
     email: {
       type: String,
       required: [true],

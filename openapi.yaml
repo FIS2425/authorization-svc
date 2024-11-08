@@ -23,10 +23,6 @@ paths:
             schema:
               type: object
               properties:
-                username:
-                  type: string
-                  description: Unique username for the user.
-                  example: "new_user"
                 email:
                   type: string
                   description: Email address of the user.
@@ -52,7 +48,6 @@ paths:
                   example: "patient456"
                   nullable: true
               required:
-                - username
                 - email
                 - password
       responses:
@@ -63,9 +58,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  username:
-                    type: string
-                    example: "new_user"
                   email:
                     type: string
                     example: "new_user@example.com"
@@ -91,7 +83,7 @@ paths:
                 additionalProperties:
                   type: string
                 example:
-                  username: "Username is required"
+                  email: "Email is required"
                   password: "Password is required"
         '401':
           description: Unauthorized - token missing or invalid
@@ -119,7 +111,7 @@ paths:
   /login:
     post:
       summary: User Login
-      description: Authenticates a user with their username and password.
+      description: Authenticates a user with their email and password.
       tags:
         - Authentication
       requestBody:
@@ -129,16 +121,16 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                email:
                   type: string
-                  description: The user's unique username.
-                  example: "admin_user"
+                  description: The user's unique email.
+                  example: "admin@email.com"
                 password:
                   type: string
                   description: The user's password.
                   example: "admin123"
               required:
-                - username
+                - email
                 - password
       responses:
         '200':
@@ -204,10 +196,10 @@ components:
           format: uuid
           description: Unique identifier for the user. Defaults to a generated UUID.
           example: "550e8400-e29b-41d4-a716-446655440000"
-        username:
+        email:
           type: string
-          description: Unique username for the user.
-          example: "john_doe"
+          description: Unique email for the user.
+          example: "john_doe@email.com"
         password:
           type: string
           description: Hashed password of the user.
@@ -244,10 +236,10 @@ components:
           description: Timestamp when the user was last updated.
           example: "2023-10-26T08:40:51.620Z"
       required:
-        - username
+        - email
         - password
         - roles
-      description: Schema for the User model, including fields for unique ID, username, password, role, and optional associations with patient and clinic.
+      description: Schema for the User model, including fields for unique ID, email, password, role, and optional associations with patient and clinic.
 
   securitySchemes:
     cookieAuth:
