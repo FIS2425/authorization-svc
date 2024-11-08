@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 
 const sampleUser = new User({
   _id: uuidv4(),
-  username: 'testuser',
+  email: 'testuser@mail.com',
   password: 'password',
   roles: ['patient'],
 });

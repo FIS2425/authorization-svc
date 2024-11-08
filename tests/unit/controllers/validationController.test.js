@@ -13,7 +13,7 @@ describe('Validation Controller', () => {
     // We test happy path as the middleware is already tested
     const mockUser = {
       _id: 'userId',
-      username: 'testuser',
+      email: 'testuser@mail.com',
       password: 'password',
       roles: ['user'],
       comparePassword: vi.fn().mockResolvedValue(true),
