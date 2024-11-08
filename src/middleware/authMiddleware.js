@@ -1,10 +1,10 @@
 import logger from '../config/logger.js';
 import User from '../schemas/User.js';
 
-export const checkRole = (role) => {
+export const checkRoles = (...roles) => {
   return async (req, res, next) => {
     const user = await User.findById(req.userId);
-    if (!user.roles.includes(role)) {
+    if (!roles.every((role) => user.roles.includes(role))) {
       logger.warn('Unauthorized', {
         method: req.method,
         url: req.originalUrl,
