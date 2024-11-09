@@ -85,6 +85,57 @@ export const getUser = async (req, res) => {
   }
 };
 
+export const editUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findById(userId);
+
+    const { email, password, roles } = req.body;
+
+    const existingUserEmail = await User.findOne({ email });
+
+    if (existingUserEmail && existingUserEmail._id.toString() !== userId) {
+      logger.warn('User already exists', {
+        method: req.method,
+        url: req.originalUrl,
+        email,
+        ip: req.ip,
+      });
+      return res.status(400).json({
+        message: 'A user with that email already exists.',
+      });
+    }
+
+    user.email = email;
+    user.password = password;
+    user.roles = roles;
+
+    await user.save();
+
+    // eslint-disable-next-line no-unused-vars
+    const { password: _, ...userWithoutPassword } = user.toObject();
+    logger.info('User updated successfully', {
+      method: req.method,
+      url: req.originalUrl,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    logger.error('Error updating user', {
+      method: req.method,
+      url: req.originalUrl,
+      error: error.message,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
 

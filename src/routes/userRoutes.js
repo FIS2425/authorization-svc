@@ -1,7 +1,17 @@
 import express from 'express';
-import { getUser, createUser, login, logout } from '../controllers/userController.js';
+import {
+  createUser,
+  getUser,
+  editUser,
+  login,
+  logout,
+} from '../controllers/userController.js';
 import { validateToken, validate } from '../middleware/validationMiddleware.js';
-import { checkRoles, userExists, hasAccessToUser } from '../middleware/authMiddleware.js';
+import {
+  checkRoles,
+  userExists,
+  hasAccessToUser,
+} from '../middleware/authMiddleware.js';
 import {
   userValidator,
   userLoginValidator,
@@ -17,10 +27,19 @@ router.post(
   createUser
 );
 
+router.get('/users/:id', validateToken, userExists, hasAccessToUser, getUser);
+
+router.put(
+  '/users/:id',
+  validateToken,
+  userExists,
+  hasAccessToUser,
+  validate(userValidator),
+  editUser
+);
+
 router.post('/login', validate(userLoginValidator), login);
 
 router.post('/logout', logout);
-
-router.get('/users/:id', validateToken, userExists, hasAccessToUser, getUser);
 
 export default router;
