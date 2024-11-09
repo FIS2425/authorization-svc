@@ -58,3 +58,27 @@ export const validateToken = async (req, res, next) => {
     }
   }
 };
+
+export const validate = (validator) => async (req, res, next) => {
+  try {
+    await validator.parseAsync(req.body);
+    next();
+  } catch (error) {
+    logger.error('Error on validation', {
+      method: req.method,
+      url: req.originalUrl,
+      error: error.errors,
+    });
+
+    const formattedErrors = error.errors.reduce((acc, err) => {
+      const field = err.path[0];
+      acc[field] = err.message;
+      return acc;
+    }, {});
+
+    return res.status(400).json({
+      message: 'Validation error',
+      errors: formattedErrors,
+    });
+  }
+};
