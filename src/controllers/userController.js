@@ -1,32 +1,11 @@
-import User from '../schemas/User.js';
 import jwt from 'jsonwebtoken';
-import { redisClient } from '../config/redis.js';
-
+import User from '../schemas/User.js';
 import logger from '../config/logger.js';
+import { redisClient } from '../config/redis.js';
 
 export const createUser = async (req, res) => {
   try {
     const { email, password, roles, doctorid, patientid } = req.body;
-
-    const errors = {};
-
-    if (!email) {
-      errors.email = 'Email is required';
-    }
-
-    if (!password) {
-      errors.password = 'Password is required';
-    }
-
-    if (Object.keys(errors).length > 0) {
-      logger.warn('Missing required fields', {
-        method: req.method,
-        url: req.originalUrl,
-        ip: req.ip,
-        errors,
-      });
-      return res.status(400).json(errors);
-    }
 
     const existingUserEmail = await User.findOne({ email });
 
@@ -65,18 +44,6 @@ export const createUser = async (req, res) => {
 
     res.status(201).json(userWithoutPassword);
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map((err) => err.message);
-
-      logger.error('Validation error creating user', {
-        method: req.method,
-        url: req.originalUrl,
-        error: errors,
-        ip: req.ip,
-      });
-
-      return res.status(400).json({ messages: errors });
-    }
     logger.error('Error creating user', {
       method: req.method,
       url: req.originalUrl,
@@ -142,7 +109,7 @@ export const login = async (req, res) => {
         process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
         {
           expiresIn: parseInt(process.env.JWT_EXPIRATION) || 3600,
-        },
+        }
       );
       const refreshToken = await jwt.sign(
         {
@@ -151,7 +118,7 @@ export const login = async (req, res) => {
         process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
         {
           expiresIn: parseInt(process.env.JWT_REFRESH_EXPIRATION) || '7d',
-        },
+        }
       );
 
       // We save the token to the cache, so that in cases of emergy we can revoke it
@@ -223,6 +190,7 @@ export const logout = async (req, res) => {
         method: req.method,
         url: req.originalUrl,
         userId: userId,
+        error: error,
       });
       res.status(200).json({ message: 'Logout successful' });
     }

@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 const sampleUser = new User({
   _id: uuidv4(),
   email: 'testuser@mail.com',
-  password: 'password',
+  password: 'pAssw0rd!',
   roles: ['patient'],
 });
 
@@ -17,9 +17,14 @@ beforeAll(async () => {
   await db.clearDatabase();
   await sampleUser.save();
 
-  const token = jwt.sign({ userId: sampleUser._id, roles: sampleUser.roles }, process.env.VITE_JWT_SECRET);
+  const token = jwt.sign(
+    { userId: sampleUser._id, roles: sampleUser.roles },
+    process.env.VITE_JWT_SECRET
+  );
 
-  redisClient.set(token, sampleUser._id.toString(), async () => { console.log('Token set'); });
+  redisClient.set(token, sampleUser._id.toString(), async () => {
+    console.log('Token set');
+  });
 
   // We mock `exists` because `redis-mock` is not compatible with `redis 4`, so we change the behavior of the method
   vi.spyOn(redisClient, 'exists').mockImplementation((key) => {
@@ -43,29 +48,34 @@ describe('Validation Middleware', () => {
   let token;
 
   beforeAll(async () => {
-    token = jwt.sign({ userId: sampleUser._id, roles: sampleUser.roles }, process.env.VITE_JWT_SECRET);
-    redisClient.set(token, sampleUser._id.toString(), async () => { console.log('Token set'); });
+    token = jwt.sign(
+      { userId: sampleUser._id, roles: sampleUser.roles },
+      process.env.VITE_JWT_SECRET
+    );
+    redisClient.set(token, sampleUser._id.toString(), async () => {
+      console.log('Token set');
+    });
   });
 
   it('should validate the token successfully', async () => {
-    const res = await request
-      .get('/validate')
-      .set('Cookie', `token=${token}`);
+    const res = await request.get('/validate').set('Cookie', `token=${token}`);
 
     expect(res.status).toBe(200);
   });
 
   it('should return 401 with no token provided', async () => {
-    const res = await request
-      .get('/validate')
-      .set('Cookie', '');
+    const res = await request.get('/validate').set('Cookie', '');
 
     expect(res.status).toBe(401);
     expect(res.body.message).toBe('No token provided');
   });
 
   it('should return 401 with token expired', async () => {
-    const expiredToken = jwt.sign({ userId: sampleUser._id, roles: sampleUser.roles }, process.env.VITE_JWT_SECRET, { expiresIn: 0 });
+    const expiredToken = jwt.sign(
+      { userId: sampleUser._id, roles: sampleUser.roles },
+      process.env.VITE_JWT_SECRET,
+      { expiresIn: 0 }
+    );
 
     const res = await request
       .get('/validate')
@@ -77,9 +87,13 @@ describe('Validation Middleware', () => {
 
   it('should return 401 with token expired in dragonfly', async () => {
     // From here on out redis will not need to be accessed, so we can safely delete the token
-    redisClient.del(token, () => { });
+    redisClient.del(token, () => {});
 
-    const expiredToken = jwt.sign({ userId: sampleUser._id, roles: sampleUser.roles }, process.env.VITE_JWT_SECRET, { expiresIn: 0 });
+    const expiredToken = jwt.sign(
+      { userId: sampleUser._id, roles: sampleUser.roles },
+      process.env.VITE_JWT_SECRET,
+      { expiresIn: 0 }
+    );
 
     const res = await request
       .get('/validate')
@@ -91,7 +105,10 @@ describe('Validation Middleware', () => {
 
   it('should return 401 if user is not found', async () => {
     const nonExistentUserId = uuidv4();
-    const invalidToken = jwt.sign({ userId: nonExistentUserId, roles: sampleUser.roles }, process.env.VITE_JWT_SECRET);
+    const invalidToken = jwt.sign(
+      { userId: nonExistentUserId, roles: sampleUser.roles },
+      process.env.VITE_JWT_SECRET
+    );
 
     const res = await request
       .get('/validate')
