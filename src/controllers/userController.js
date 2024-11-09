@@ -44,18 +44,6 @@ export const createUser = async (req, res) => {
 
     res.status(201).json(userWithoutPassword);
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map((err) => err.message);
-
-      logger.error('Validation error creating user', {
-        method: req.method,
-        url: req.originalUrl,
-        error: errors,
-        ip: req.ip,
-      });
-
-      return res.status(400).json({ messages: errors });
-    }
     logger.error('Error creating user', {
       method: req.method,
       url: req.originalUrl,

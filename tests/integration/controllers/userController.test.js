@@ -34,8 +34,8 @@ beforeAll(async () => {
   await sampleUser.save();
   await clinicAdmin.save();
 
-  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => {});
-  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => {});
+  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => { });
+  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => { });
 
   // We mock `exists` because `redis-mock` is not compatible with `redis 4`, so we change the behavior of the method
   vi.spyOn(redisClient, 'exists').mockImplementation((key) => {
@@ -194,8 +194,8 @@ describe('User Controller Integration Tests', () => {
         .post('/users')
         .set('Cookie', [`token=${clinicAdminToken}`])
         .send({
-          email: 'email2@email.com',
-          password: 'pAssw0rd!',
+          email: 'email2.com',
+          password: 'password!',
           roles: ['user'],
         });
 
@@ -203,7 +203,9 @@ describe('User Controller Integration Tests', () => {
       expect(response.body).toEqual({
         message: 'Validation error',
         errors: {
-          roles: 'Invalid role found.',
+          email: 'Invalid email address',
+          password: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+          roles: 'Invalid role found.'
         },
       });
     });

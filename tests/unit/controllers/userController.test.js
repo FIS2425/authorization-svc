@@ -195,16 +195,21 @@ describe('User Controller', () => {
         .post('/users')
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
         .send({
-          email: 'email2@email.com',
-          password: 'pAssw0rd!',
+          email: 'email2.com',
+          password: 'password!',
           roles: ['user'],
         });
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
         message: 'Validation error',
-        errors: { roles: 'Invalid role found.' },
+        errors: {
+          email: 'Invalid email address',
+          password: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+          roles: 'Invalid role found.'
+        },
       });
     });
   });
 });
+
