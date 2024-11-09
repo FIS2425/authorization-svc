@@ -38,7 +38,6 @@ beforeAll(async () => {
         if (err) {
           reject(false);
         } else {
-          console.log('Token exists', value);
           resolve(value ? 1 : 0);
         }
       });
