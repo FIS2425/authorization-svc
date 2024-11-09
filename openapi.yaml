@@ -107,6 +107,94 @@ paths:
                     example: "Unauthorized"
         '500':
           $ref: '#/components/responses/ServerError'
+  /users/{id}:
+    get:
+      summary: Retrieve user information
+      description: Retrieve user details by user ID. Requires the user to be the owner or have specific roles.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the user to retrieve
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  email:
+                    type: string
+                  username:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                _id: "617f1f77bcf86cd799439011"
+                email: "user@example.com"
+                username: "johndoe"
+                roles: ["user"]
+                createdAt: "2023-01-01T12:00:00Z"
+                updatedAt: "2023-01-10T12:00:00Z"
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Token not valid"
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Unauthorized"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "User not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Internal server error"
 
   /login:
     post:

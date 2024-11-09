@@ -56,6 +56,35 @@ export const createUser = async (req, res) => {
   }
 };
 
+export const getUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findById(userId);
+
+    // eslint-disable-next-line no-unused-vars
+    const { password, ...userWithoutPassword } = user.toObject();
+    logger.info('User retrieved successfully', {
+      method: req.method,
+      url: req.originalUrl,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    logger.error('Error retrieving user', {
+      method: req.method,
+      url: req.originalUrl,
+      error: error.message,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
 

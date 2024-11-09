@@ -110,7 +110,7 @@ describe('User Controller', () => {
         password: 'password',
         roles: ['clinicadmin'],
       };
-      vi.spyOn(jwt, 'verify').mockReturnValueOnce('token');
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({ userId: 'userId', roles: ['clinicadmin'] });
       vi.spyOn(User, 'findById').mockResolvedValue(user);
       vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
     });
@@ -211,5 +211,56 @@ describe('User Controller', () => {
       });
     });
   });
-});
 
+  describe('getUser', () => {
+    // Mock middlewares
+    beforeEach(() => {
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
+    });
+
+    it('should return user successfully', async () => {
+      const user = new User({
+        _id: 'userId',
+        email: 'email@email.com',
+        password: 'password',
+        roles: ['clinicadmin'],
+      });
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+
+      const response = await request
+        .get('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
+
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe(user.email);
+      expect(response.body.roles).toEqual(user.roles);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    it('should return 404 if user is not found', async () => {
+      // the first call to `User.findById` is on the middleware
+      vi.spyOn(User, 'findById').mockReturnValueOnce({}).mockResolvedValue(null);
+
+      const response = await request
+        .get('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'User not found' });
+    });
+
+    it('should return 500 if there is an error retrieving user', async () => {
+      const errorMessage = 'Database error';
+      vi.spyOn(User, 'findById').mockReturnValueOnce({}).mockResolvedValue(new Error(errorMessage));
+
+      const response = await request
+        .get('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+});
