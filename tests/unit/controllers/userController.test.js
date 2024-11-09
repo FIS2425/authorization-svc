@@ -111,7 +111,7 @@ describe('User Controller', () => {
         password: 'password',
         roles: ['clinicadmin'],
       };
-      vi.spyOn(jwt, 'verify').mockReturnValueOnce('token');
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({ userId: 'userId', roles: ['clinicadmin'] });
       vi.spyOn(User, 'findById').mockResolvedValue(user);
       vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
     });

@@ -15,6 +15,7 @@ export const validateToken = async (req, res, next) => {
       process.env.JWT_SECRET || process.env.VITE_JWT_SECRET
     );
     req.userId = decoded.userId;
+    req.roles = decoded.roles;
 
     const user = await User.findById(req.userId);
 
