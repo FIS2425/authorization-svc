@@ -61,16 +61,8 @@ export const getUser = async (req, res) => {
 
   try {
     const user = await User.findById(userId);
-    if (!user) {
-      logger.warn('User not found', {
-        method: req.method,
-        url: req.originalUrl,
-        user: userId,
-        userId: req.userId,
-        ip: req.ip,
-      });
-      return res.status(404).json({ message: 'User not found' });
-    }
+
+    // eslint-disable-next-line no-unused-vars
     const { password, ...userWithoutPassword } = user.toObject();
     logger.info('User retrieved successfully', {
       method: req.method,
