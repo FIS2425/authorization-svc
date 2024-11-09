@@ -211,6 +211,39 @@ describe('User Controller Integration Tests', () => {
       expect(response.status).toBe(403);
       expect(response.body.message).toEqual('Unauthorized');
     });
+  });
 
+  describe('getUser', () => {
+    it('should return user successfully', async () => {
+      const response = await request
+        .get(`/users/${sampleUser.id.toString()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`]);
+
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe(sampleUser.email);
+      expect(response.body.roles).toEqual(sampleUser.roles);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    it('should return 404 if user is not found', async () => {
+      const response = await request
+        .get(`/users/${uuidv4()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`]);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'User not found' });
+    });
+
+    it('should return 500 if there is an error retrieving user', async () => {
+      const errorMessage = 'Database error';
+      vi.spyOn(User, 'findById').mockResolvedValue(new Error(errorMessage));
+
+      const response = await request
+        .get(`/users/${sampleUser.id.toString()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`]);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
   });
 });
