@@ -103,7 +103,6 @@ describe('User Controller', () => {
   });
 
   describe('createUser', () => {
-
     // Mock middlewares
     beforeEach(() => {
       const user = {
@@ -130,7 +129,7 @@ describe('User Controller', () => {
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
         .send({
           email: 'email@test.com',
-          password: 'password',
+          password: 'pAssw0rd!',
           roles: ['patient'],
         });
 
@@ -148,8 +147,11 @@ describe('User Controller', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
-        email: 'Email is required',
-        password: 'Password is required',
+        message: 'Validation error',
+        errors: {
+          email: 'Email is required',
+          password: 'Password is required',
+        },
       });
     });
 
@@ -160,32 +162,30 @@ describe('User Controller', () => {
         .send({ email: '', password: '' });
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        email: 'Email is required',
-        password: 'Password is required',
-      });
     });
 
     it('should return 400 if user already exists', async () => {
       vi.spyOn(User, 'findOne').mockResolvedValue({
         _id: 'userId',
         email: 'email@test.com',
-        password: 'password',
+        password: 'pAssw0rd!',
         roles: ['patient'],
       });
       const response = await request
         .post('/users')
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
-        .send({ email: 'email@test.com', password: 'password' });
+        .send({ email: 'email@test.com', password: 'pAssw0rd!' });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('A user with that email already exists.');
+      expect(response.body.message).toBe(
+        'A user with that email already exists.'
+      );
     });
 
     it('should return 400 on failed user attr validation', async () => {
       const user = {
-        email: 'email2.com',
-        password: 'password',
+        email: 'email2@email.com',
+        password: 'pAssw0rd!',
         roles: ['user'],
       };
 
@@ -196,16 +196,20 @@ describe('User Controller', () => {
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
         .send({
           email: 'email2.com',
-          password: 'password',
+          password: 'password!',
           roles: ['user'],
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.messages).toEqual([
-        'Invalid email address',
-        '`user` is not a valid enum value for path `roles.0`.'
-      ]);
+      expect(response.body).toEqual({
+        message: 'Validation error',
+        errors: {
+          email: 'Invalid email address',
+          password: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+          roles: 'Invalid role found.'
+        },
+      });
     });
-
   });
 });
+

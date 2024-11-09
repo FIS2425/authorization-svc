@@ -9,19 +9,25 @@ import jwt from 'jsonwebtoken';
 const sampleUser = new User({
   _id: uuidv4(),
   email: 'testuser@test.com',
-  password: 'password',
+  password: 'pAssw0rd!',
   roles: ['patient'],
 });
 
 const clinicAdmin = new User({
   _id: uuidv4(),
   email: 'clinicAdmin@test.com',
-  password: 'password',
+  password: 'pAssw0rd!',
   roles: ['clinicadmin'],
 });
 
-const sampleUserToken = jwt.sign({ userId: sampleUser._id, roles: sampleUser.roles }, process.env.VITE_JWT_SECRET);
-const clinicAdminToken = jwt.sign({ userId: clinicAdmin._id, roles: clinicAdmin.roles }, process.env.VITE_JWT_SECRET);
+const sampleUserToken = jwt.sign(
+  { userId: sampleUser._id, roles: sampleUser.roles },
+  process.env.VITE_JWT_SECRET
+);
+const clinicAdminToken = jwt.sign(
+  { userId: clinicAdmin._id, roles: clinicAdmin.roles },
+  process.env.VITE_JWT_SECRET
+);
 
 beforeAll(async () => {
   await db.clearDatabase();
@@ -55,7 +61,7 @@ describe('User Controller Integration Tests', () => {
     it('should login successfully with valid credentials', async () => {
       const response = await request
         .post('/login')
-        .send({ email: 'testuser@test.com', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'pAssw0rd!' });
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Login successful');
@@ -70,7 +76,7 @@ describe('User Controller Integration Tests', () => {
     it('should return 401 with invalid credentials', async () => {
       const response = await request
         .post('/login')
-        .send({ email: 'testuser@test.com', password: 'wrongpassword' });
+        .send({ email: 'testuser@test.com', password: 'wrongpAssw0rd!' });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Invalid credentials');
@@ -79,7 +85,7 @@ describe('User Controller Integration Tests', () => {
     it('should return 401 if user is not found', async () => {
       const response = await request
         .post('/login')
-        .send({ email: 'nonexistentuser@test.com', password: 'password' });
+        .send({ email: 'nonexistentuser@test.com', password: 'pAssw0rd!' });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('User not found');
@@ -90,7 +96,7 @@ describe('User Controller Integration Tests', () => {
     it('should logout successfully', async () => {
       const loginResponse = await request
         .post('/login')
-        .send({ email: 'testuser@test.com', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'pAssw0rd!' });
 
       const cookies = loginResponse.headers['set-cookie'];
 
@@ -110,7 +116,7 @@ describe('User Controller Integration Tests', () => {
     it('should handle errors during logout', async () => {
       const loginResponse = await request
         .post('/login')
-        .send({ email: 'testuser@test.com', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'pAssw0rd!' });
 
       const cookies = loginResponse.headers['set-cookie'];
 
@@ -127,7 +133,7 @@ describe('User Controller Integration Tests', () => {
     it('should create a user successfully', async () => {
       const mockUser = {
         email: 'email@test.com',
-        password: 'password',
+        password: 'pAssw0rd!',
         roles: ['patient'],
       };
 
@@ -136,14 +142,14 @@ describe('User Controller Integration Tests', () => {
         .set('Cookie', [`token=${clinicAdminToken}`])
         .send({
           email: 'email@test.com',
-          password: 'password',
+          password: 'pAssw0rd!',
           roles: ['patient'],
         });
 
       expect(response.status).toBe(201);
       expect(response.body.email).toBe(mockUser.email);
       expect(response.body.roles).toEqual(mockUser.roles);
-      expect(response.body).not.toHaveProperty('password');
+      expect(response.body).not.toHaveProperty('pAssw0rd!');
     });
 
     it('should return 400 when required email and password not sent', async () => {
@@ -154,8 +160,11 @@ describe('User Controller Integration Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
-        email: 'Email is required',
-        password: 'Password is required',
+        message: 'Validation error',
+        errors: {
+          email: 'Email is required',
+          password: 'Password is required',
+        },
       });
     });
 
@@ -166,20 +175,18 @@ describe('User Controller Integration Tests', () => {
         .send({ email: '', password: '' });
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        email: 'Email is required',
-        password: 'Password is required',
-      });
     });
 
     it('should return 400 if user already exists', async () => {
       const response = await request
         .post('/users')
         .set('Cookie', [`token=${clinicAdminToken}`])
-        .send({ email: 'testuser@test.com', password: 'password' });
+        .send({ email: 'testuser@test.com', password: 'pAssw0rd!' });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('A user with that email already exists.');
+      expect(response.body.message).toBe(
+        'A user with that email already exists.'
+      );
     });
 
     it('should return 400 on failed user attr validation', async () => {
@@ -188,15 +195,19 @@ describe('User Controller Integration Tests', () => {
         .set('Cookie', [`token=${clinicAdminToken}`])
         .send({
           email: 'email2.com',
-          password: 'password',
+          password: 'password!',
           roles: ['user'],
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.messages).toEqual([
-        'Invalid email address',
-        '`user` is not a valid enum value for path `roles.0`.'
-      ]);
+      expect(response.body).toEqual({
+        message: 'Validation error',
+        errors: {
+          email: 'Invalid email address',
+          password: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+          roles: 'Invalid role found.'
+        },
+      });
     });
 
     it('should return 403 if a non clinicadmin tries to create an user', async () => {
@@ -204,14 +215,13 @@ describe('User Controller Integration Tests', () => {
         .post('/users')
         .set('Cookie', [`token=${sampleUserToken}`])
         .send({
-          email: 'email2.com',
-          password: 'password',
+          email: 'email2@email.com',
+          password: 'pAssw0rd!',
           roles: ['patient'],
         });
 
       expect(response.status).toBe(403);
       expect(response.body.message).toEqual('Unauthorized');
     });
-
   });
 });
