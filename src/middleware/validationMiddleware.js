@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { redisClient } from '../config/redis.js';
+import { redisClient, deleteToken } from '../config/redis.js';
 import logger from '../config/logger.js';
 import User from '../schemas/User.js';
 
@@ -37,6 +37,7 @@ export const validateToken = async (req, res, next) => {
         url: req.originalUrl,
         ip: req.ip,
       });
+      deleteToken(req.userId, token);
       return res.status(401).json({ message: 'Token expired' });
     }
 
