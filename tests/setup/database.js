@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { vi } from 'vitest';
 
 let mongoServer;
 
@@ -8,11 +7,6 @@ export const connect = async () => {
   mongoServer = await MongoMemoryServer.create();
   await mongoose.connect(mongoServer.getUri());
   console.log('MongoDB en memoria conectado');
-  // Mock Redis
-  vi.mock('redis', () => {
-    return import('redis-mock'); // Dynamically import 'redis-mock' for mocking
-  });
-  console.log('Redis mocked');
 };
 
 export const closeDatabase = async () => {

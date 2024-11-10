@@ -25,19 +25,6 @@ beforeAll(async () => {
   redisClient.set(token, sampleUser._id.toString(), async () => {
     console.log('Token set');
   });
-
-  // We mock `exists` because `redis-mock` is not compatible with `redis 4`, so we change the behavior of the method
-  vi.spyOn(redisClient, 'exists').mockImplementation((key) => {
-    return new Promise((resolve, reject) => {
-      redisClient.get(key, (err, value) => {
-        if (err) {
-          reject(false);
-        } else {
-          resolve(value ? 1 : 0);
-        }
-      });
-    });
-  });
 });
 
 afterAll(async () => {
@@ -87,7 +74,7 @@ describe('Validation Middleware', () => {
 
   it('should return 401 with token expired in dragonfly', async () => {
     // From here on out redis will not need to be accessed, so we can safely delete the token
-    redisClient.del(token, () => {});
+    redisClient.del(token, () => { });
 
     const expiredToken = jwt.sign(
       { userId: sampleUser._id, roles: sampleUser.roles },
