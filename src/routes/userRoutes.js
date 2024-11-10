@@ -14,6 +14,7 @@ import {
 } from '../middleware/authMiddleware.js';
 import {
   userValidator,
+  userEditValidator,
   userLoginValidator,
 } from '../validators/userValidator.js';
 
@@ -34,7 +35,7 @@ router.put(
   validateToken,
   userExists,
   hasAccessToUser,
-  validate(userValidator),
+  validate(userEditValidator),
   editUser
 );
 

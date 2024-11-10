@@ -107,9 +107,9 @@ export const editUser = async (req, res) => {
       });
     }
 
-    user.email = email;
-    user.password = password;
-    user.roles = roles;
+    email && (user.email = email);
+    password && (user.password = password);
+    roles && (user.roles = roles);
 
     await user.save();
 
@@ -237,5 +237,5 @@ export const logout = async (req, res) => {
       });
       res.status(200).json({ message: 'Logout successful' });
     }
-  }
+  };
 };
