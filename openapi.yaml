@@ -195,7 +195,123 @@ paths:
                     type: string
               example:
                 message: "Internal server error"
-
+    put:
+      summary: Update user information
+      description: Update user details by user ID. Requires the user to be the owner or have specific roles.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the user to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email address of the user.
+                  example: "user@example.com"
+                password:
+                  type: string
+                  description: User's password.
+                  example: "securepassword123"
+                roles:
+                  type: array
+                  description: List of roles assigned to the user.
+                  items:
+                    type: string
+                  example: ["admin", "doctor"]
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  email:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                _id: "617f1f77bcf86cd799439011"
+                email: "user@example.com"
+                roles: ["doctor"]
+                createdAt: "2023-01-01T12:00:00Z"
+                updatedAt: "2023-01-10T12:00:00Z"
+        '400':
+          description: Bad request - missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  email: "Email is required"
+                  password: "Password is required"
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Token not valid"
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Unauthorized"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "User not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Internal server error"
+      
   /login:
     post:
       summary: User Login

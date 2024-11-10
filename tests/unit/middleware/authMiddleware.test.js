@@ -87,7 +87,7 @@ describe('Auth Middleware', () => {
       await userExists(req, res, next);
 
       expect(User.findById).toHaveBeenCalledWith('someId');
-      expect(req.user).toEqual({ _id: 'someId', roles: ['patient'] });
+      expect(req.onUser).toEqual({ _id: 'someId', roles: ['patient'] });
       expect(next).toHaveBeenCalled();
     });
 
