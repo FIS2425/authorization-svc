@@ -228,10 +228,6 @@ paths:
                   items:
                     type: string
                   example: ["admin", "doctor"]
-              required:
-                - email
-                - password
-                - roles
       responses:
         '200':
           description: User updated successfully
