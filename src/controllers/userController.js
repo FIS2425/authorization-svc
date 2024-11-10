@@ -136,6 +136,36 @@ export const editUser = async (req, res) => {
   }
 };
 
+export const deleteUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findById(userId);
+
+    await user.delete();
+
+    logger.info('User deleted successfully', {
+      method: req.method,
+      url: req.originalUrl,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(204).json({ _id: req.userId });
+  }
+  catch (error) {
+    logger.error('Error deleting user', {
+      method: req.method,
+      url: req.originalUrl,
+      error: error.message,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
 

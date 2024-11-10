@@ -3,6 +3,7 @@ import {
   createUser,
   getUser,
   editUser,
+  deleteUser,
   login,
   logout,
 } from '../controllers/userController.js';
@@ -23,6 +24,7 @@ const router = express.Router();
 router.post(
   '/users',
   validateToken,
+  // CheckRoles must be changed for the planned permissions feature
   checkRoles('clinicadmin'),
   validate(userValidator),
   createUser
@@ -34,9 +36,20 @@ router.put(
   '/users/:id',
   validateToken,
   userExists,
+  // hasAccessToUser must be changed for the planned permissions feature
   hasAccessToUser,
   validate(userEditValidator),
   editUser
+);
+
+router.delete(
+  '/users/:id',
+  validateToken,
+  userExists,
+  // hasAccessToUser must be changed for the planned permissions feature. A patient should not be able to delete itself.
+  hasAccessToUser,
+  validate(userEditValidator),
+  deleteUser
 );
 
 router.post('/login', validate(userLoginValidator), login);
