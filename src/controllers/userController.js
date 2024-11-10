@@ -112,7 +112,7 @@ export const editUser = async (req, res) => {
     roles && (user.roles = roles);
 
     if (password || roles) {
-      deleteTokensByUserId(userId, null);
+      deleteTokensByUserId(userId, req.cookies.token);
     }
 
     await user.save();
