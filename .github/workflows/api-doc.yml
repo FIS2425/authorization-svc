@@ -1,10 +1,6 @@
 name: 📚 OpenAPI Documentation
 
 on:
-  push:
-    branches:
-      - main
-      - develop
   pull_request:
     branches:
       - main
@@ -41,4 +37,4 @@ jobs:
         force: true
         files: openapi.md
         message: 'docs(api): updated openapi.md 📝'
-        branch: ${{ github.head_ref || 'main' }}
+        branch: ${{ github.head_ref }}
