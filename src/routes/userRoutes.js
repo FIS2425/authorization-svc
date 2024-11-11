@@ -3,6 +3,7 @@ import {
   createUser,
   getUser,
   editUser,
+  changePassword,
   login,
   logout,
 } from '../controllers/userController.js';
@@ -37,6 +38,15 @@ router.put(
   hasAccessToUser,
   validate(userEditValidator),
   editUser
+);
+
+router.post(
+  'users/change-password',
+  validateToken,
+  userExists,
+  // Add permissions middleware
+  validate(changePasswordValidator),
+  changePassword
 );
 
 router.post('/login', validate(userLoginValidator), login);
