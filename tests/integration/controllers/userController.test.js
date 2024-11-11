@@ -34,8 +34,8 @@ beforeAll(async () => {
   await sampleUser.save();
   await clinicAdmin.save();
 
-  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => { });
-  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => { });
+  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => {});
+  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => {});
 });
 
 afterAll(async () => {
@@ -190,8 +190,9 @@ describe('User Controller Integration Tests', () => {
         message: 'Validation error',
         errors: {
           email: 'Invalid email address',
-          password: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-          roles: 'Invalid role found.'
+          password:
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+          roles: 'Invalid role found.',
         },
       });
     });
@@ -207,7 +208,7 @@ describe('User Controller Integration Tests', () => {
         });
 
       expect(response.status).toBe(403);
-      expect(response.body.message).toEqual('Unauthorized');
+      expect(response.body.message).toEqual('Forbidden');
     });
   });
 

@@ -4,13 +4,13 @@ import User from '../schemas/User.js';
 export const checkRoles = (...roles) => {
   return async (req, res, next) => {
     if (!roles.every((role) => req.roles.includes(role))) {
-      logger.warn('Unauthorized', {
+      logger.warn('Forbidden', {
         method: req.method,
         url: req.originalUrl,
         userId: req.userId,
         ip: req.ip,
       });
-      return res.status(403).json({ message: 'Unauthorized' });
+      return res.status(403).json({ message: 'Forbidden' });
     }
     next();
   };
@@ -32,18 +32,19 @@ export const userExists = async (req, res, next) => {
 };
 
 export const hasAccessToUser = async (req, res, next) => {
-  const hasAccess = req.roles.includes('admin') ||
-        req.roles.includes('clinicadmin') ||
-        req.roles.includes('doctor') ||
-        req.params.id === req.userId.toString();
+  const hasAccess =
+    req.roles.includes('admin') ||
+    req.roles.includes('clinicadmin') ||
+    req.roles.includes('doctor') ||
+    req.params.id === req.userId.toString();
   if (!hasAccess) {
-    logger.warn('Unauthorized', {
+    logger.warn('Forbidden', {
       method: req.method,
       url: req.originalUrl,
       userId: req.userId,
       ip: req.ip,
     });
-    return res.status(403).json({ message: 'Unauthorized' });
+    return res.status(403).json({ message: 'Forbidden' });
   }
   next();
 };
