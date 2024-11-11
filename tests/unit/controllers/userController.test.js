@@ -2,6 +2,7 @@ import { describe, beforeEach, afterEach, expect, it, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
 import { request } from '../../setup/setup';
 import User from '../../../src/schemas/User.js';
+import Role from '../../../src/schemas/Role.js';
 import { redisClient } from '../../../src/config/redis.js';
 
 afterEach(() => {
@@ -110,7 +111,10 @@ describe('User Controller', () => {
         password: 'password',
         roles: ['clinicadmin'],
       };
-      vi.spyOn(jwt, 'verify').mockReturnValueOnce({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({
+        userId: 'userId',
+        roles: ['clinicadmin'],
+      });
       vi.spyOn(User, 'findById').mockResolvedValue(user);
       vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
     });
@@ -123,6 +127,14 @@ describe('User Controller', () => {
       };
 
       vi.spyOn(User, 'create').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
 
       const response = await request
         .post('/users')
@@ -140,6 +152,15 @@ describe('User Controller', () => {
     });
 
     it('should return 400 when required email and password not sent', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
@@ -156,6 +177,15 @@ describe('User Controller', () => {
     });
 
     it('should return 400 when required email and password empty', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
@@ -171,6 +201,15 @@ describe('User Controller', () => {
         password: 'pAssw0rd!',
         roles: ['patient'],
       });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
@@ -186,10 +225,18 @@ describe('User Controller', () => {
       const user = {
         email: 'email2@email.com',
         password: 'pAssw0rd!',
-        roles: ['user'],
+        roles: ['patient'],
       };
 
       vi.spyOn(User, 'create').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
 
       const response = await request
         .post('/users')
@@ -197,7 +244,7 @@ describe('User Controller', () => {
         .send({
           email: 'email2.com',
           password: 'password!',
-          roles: ['user'],
+          roles: ['patient'],
         });
 
       expect(response.status).toBe(400);
@@ -205,8 +252,8 @@ describe('User Controller', () => {
         message: 'Validation error',
         errors: {
           email: 'Invalid email address',
-          password: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-          roles: 'Invalid role found.'
+          password:
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });
@@ -215,7 +262,10 @@ describe('User Controller', () => {
   describe('getUser', () => {
     // Mock middlewares
     beforeEach(() => {
-      vi.spyOn(jwt, 'verify').mockReturnValueOnce({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({
+        userId: 'userId',
+        roles: ['clinicadmin'],
+      });
       vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
     });
 
@@ -224,10 +274,18 @@ describe('User Controller', () => {
         _id: 'userId',
         email: 'email@email.com',
         password: 'password',
-        roles: ['clinicadmin'],
+        roles: ['doctor'],
       });
 
       vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'get', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
 
       const response = await request
         .get('/users/userId')
@@ -241,7 +299,9 @@ describe('User Controller', () => {
 
     it('should return 404 if user is not found', async () => {
       // the first call to `User.findById` is on the middleware
-      vi.spyOn(User, 'findById').mockReturnValueOnce({}).mockResolvedValue(null);
+      vi.spyOn(User, 'findById')
+        .mockReturnValueOnce({})
+        .mockResolvedValue(null);
 
       const response = await request
         .get('/users/userId')
@@ -253,7 +313,17 @@ describe('User Controller', () => {
 
     it('should return 500 if there is an error retrieving user', async () => {
       const errorMessage = 'Database error';
-      vi.spyOn(User, 'findById').mockReturnValueOnce({}).mockResolvedValue(new Error(errorMessage));
+      vi.spyOn(User, 'findById')
+        .mockReturnValueOnce({})
+        .mockResolvedValue(new Error(errorMessage));
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'get', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
 
       const response = await request
         .get('/users/userId')

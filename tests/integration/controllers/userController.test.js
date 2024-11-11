@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as db from '../../setup/database';
 import { request } from '../../setup/setup';
 import User from '../../../src/schemas/User.js';
+import Role from '../../../src/schemas/Role.js';
 import { redisClient } from '../../../src/config/redis.js';
 import jwt from 'jsonwebtoken';
 
@@ -34,8 +35,8 @@ beforeAll(async () => {
   await sampleUser.save();
   await clinicAdmin.save();
 
-  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => { });
-  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => { });
+  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => {});
+  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => {});
 });
 
 afterAll(async () => {
@@ -117,6 +118,15 @@ describe('User Controller Integration Tests', () => {
 
   describe('createUser', () => {
     it('should create a user successfully', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const mockUser = {
         email: 'email@test.com',
         password: 'pAssw0rd!',
@@ -139,6 +149,15 @@ describe('User Controller Integration Tests', () => {
     });
 
     it('should return 400 when required email and password not sent', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', [`token=${clinicAdminToken}`])
@@ -155,6 +174,15 @@ describe('User Controller Integration Tests', () => {
     });
 
     it('should return 400 when required email and password empty', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', [`token=${clinicAdminToken}`])
@@ -164,6 +192,15 @@ describe('User Controller Integration Tests', () => {
     });
 
     it('should return 400 if user already exists', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', [`token=${clinicAdminToken}`])
@@ -176,13 +213,22 @@ describe('User Controller Integration Tests', () => {
     });
 
     it('should return 400 on failed user attr validation', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'create', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', [`token=${clinicAdminToken}`])
         .send({
           email: 'email2.com',
           password: 'password!',
-          roles: ['user'],
+          roles: ['patient'],
         });
 
       expect(response.status).toBe(400);
@@ -190,13 +236,20 @@ describe('User Controller Integration Tests', () => {
         message: 'Validation error',
         errors: {
           email: 'Invalid email address',
-          password: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-          roles: 'Invalid role found.'
+          password:
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });
 
-    it('should return 403 if a non clinicadmin tries to create an user', async () => {
+    it('should return 403 if a user without the required role tries to create a user', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'patient',
+          permissions: [{ method: 'get', onRoles: ['himself'] }],
+        },
+      ]);
+
       const response = await request
         .post('/users')
         .set('Cookie', [`token=${sampleUserToken}`])
@@ -207,12 +260,21 @@ describe('User Controller Integration Tests', () => {
         });
 
       expect(response.status).toBe(403);
-      expect(response.body.message).toEqual('Unauthorized');
+      expect(response.body.message).toEqual('Forbidden');
     });
   });
 
   describe('getUser', () => {
     it('should return user successfully', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'get', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
       const response = await request
         .get(`/users/${sampleUser.id.toString()}`)
         .set('Cookie', [`token=${clinicAdminToken}`]);
@@ -235,6 +297,14 @@ describe('User Controller Integration Tests', () => {
     it('should return 500 if there is an error retrieving user', async () => {
       const errorMessage = 'Database error';
       vi.spyOn(User, 'findById').mockResolvedValue(new Error(errorMessage));
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'get', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
 
       const response = await request
         .get(`/users/${sampleUser.id.toString()}`)
