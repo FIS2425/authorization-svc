@@ -36,19 +36,6 @@ beforeAll(async () => {
 
   redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => { });
   redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => { });
-
-  // We mock `exists` because `redis-mock` is not compatible with `redis 4`, so we change the behavior of the method
-  vi.spyOn(redisClient, 'exists').mockImplementation((key) => {
-    return new Promise((resolve, reject) => {
-      redisClient.get(key, (err, value) => {
-        if (err) {
-          reject(false);
-        } else {
-          resolve(value ? 1 : 0);
-        }
-      });
-    });
-  });
 });
 
 afterAll(async () => {

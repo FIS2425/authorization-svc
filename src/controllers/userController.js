@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../schemas/User.js';
 import logger from '../config/logger.js';
-import { redisClient } from '../config/redis.js';
+import { redisClient, deleteTokensByUserId } from '../config/redis.js';
 
 export const createUser = async (req, res) => {
   try {
@@ -111,6 +111,10 @@ export const editUser = async (req, res) => {
     password && (user.password = password);
     roles && (user.roles = roles);
 
+    if (password || roles) {
+      deleteTokensByUserId(userId, req.cookies.token);
+    }
+
     await user.save();
 
     // eslint-disable-next-line no-unused-vars
@@ -201,6 +205,10 @@ export const login = async (req, res) => {
       redisClient.set(refreshToken, user._id.toString(), {
         EX: parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600,
       });
+
+      // We create an index to be able to search by userId
+      redisClient.sAdd(`user_tokens:${user._id.toString()}`, authToken);
+      redisClient.sAdd(`user_tokens:${user._id.toString()}`, refreshToken);
 
       res.cookie('token', authToken, { httpOnly: true });
       res.cookie('refreshToken', refreshToken, { httpOnly: true });

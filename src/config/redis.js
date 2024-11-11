@@ -5,6 +5,20 @@ export const redisClient = redis.createClient({
   port: process.env.DRAGONFLY_PORT,
 });
 
+export async function deleteTokensByUserId(userId, excludeToken) {
+  const tokens = (await redisClient
+    .sMembers(`user_tokens:${userId}`))
+    .filter((token) => token !== excludeToken);
+  for (const token of tokens) {
+    await deleteToken(userId, token);
+  }
+};
+
+export async function deleteToken(userId, token) {
+  await redisClient.del(token);
+  await redisClient.sRem(`user_tokens:${userId}`, token);
+};
+
 export default function () {
   try {
     redisClient.on('connect', () => {
