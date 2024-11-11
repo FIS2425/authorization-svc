@@ -55,7 +55,7 @@ const roles = [
       {
         _id: uuidv4(),
         method: 'create',
-        onRoles: ['doctor', 'patient', 'himself'],
+        onRoles: ['doctor', 'patient'],
       },
       { _id: uuidv4(), method: 'edit', onRoles: ['doctor', 'patient'] },
       { _id: uuidv4(), method: 'delete', onRoles: ['doctor', 'patient'] },
