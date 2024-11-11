@@ -148,6 +148,8 @@ export const deleteUser = async (req, res) => {
 
     await user.delete();
 
+    deleteTokensByUserId(userId, req.cookies.token);
+
     logger.info('User deleted successfully', {
       method: req.method,
       url: req.originalUrl,
