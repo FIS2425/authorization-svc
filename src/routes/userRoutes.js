@@ -7,11 +7,7 @@ import {
   logout,
 } from '../controllers/userController.js';
 import { validateToken, validate } from '../middleware/validationMiddleware.js';
-import {
-  checkRoles,
-  userExists,
-  hasAccessToUser,
-} from '../middleware/authMiddleware.js';
+import { userExists, authorizeRequest } from '../middleware/authMiddleware.js';
 import {
   userValidator,
   userEditValidator,
@@ -23,19 +19,25 @@ const router = express.Router();
 router.post(
   '/users',
   validateToken,
-  checkRoles('clinicadmin'),
   validate(userValidator),
+  authorizeRequest('create'),
   createUser
 );
 
-router.get('/users/:id', validateToken, userExists, hasAccessToUser, getUser);
+router.get(
+  '/users/:id',
+  validateToken,
+  userExists,
+  authorizeRequest('get'),
+  getUser
+);
 
 router.put(
   '/users/:id',
   validateToken,
   userExists,
-  hasAccessToUser,
   validate(userEditValidator),
+  authorizeRequest('edit'),
   editUser
 );
 
