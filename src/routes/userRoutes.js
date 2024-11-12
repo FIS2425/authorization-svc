@@ -3,6 +3,7 @@ import {
   createUser,
   getUser,
   editUser,
+  deleteUser,
   login,
   logout,
 } from '../controllers/userController.js';
@@ -39,6 +40,14 @@ router.put(
   validate(userEditValidator),
   authorizeRequest('edit'),
   editUser
+);
+
+router.delete(
+  '/users/:id',
+  validateToken,
+  userExists,
+  authorizeRequest('delete'),
+  deleteUser
 );
 
 router.post('/login', validate(userLoginValidator), login);
