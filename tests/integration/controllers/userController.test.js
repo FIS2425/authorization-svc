@@ -35,8 +35,8 @@ beforeAll(async () => {
   await sampleUser.save();
   await clinicAdmin.save();
 
-  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => {});
-  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => {});
+  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => { });
+  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => { });
 });
 
 afterAll(async () => {
@@ -204,7 +204,11 @@ describe('User Controller Integration Tests', () => {
       const response = await request
         .post('/users')
         .set('Cookie', [`token=${clinicAdminToken}`])
-        .send({ email: 'testuser@test.com', password: 'pAssw0rd!' });
+        .send({
+          email: 'testuser@test.com',
+          password: 'pAssw0rd!',
+          roles: ['patient'],
+        });
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe(
@@ -237,7 +241,7 @@ describe('User Controller Integration Tests', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });

@@ -19,8 +19,8 @@ const router = express.Router();
 router.post(
   '/users',
   validateToken,
-  authorizeRequest('create'),
   validate(userValidator),
+  authorizeRequest('create'),
   createUser
 );
 
@@ -36,8 +36,8 @@ router.put(
   '/users/:id',
   validateToken,
   userExists,
-  authorizeRequest('edit'),
   validate(userEditValidator),
+  authorizeRequest('edit'),
   editUser
 );
 

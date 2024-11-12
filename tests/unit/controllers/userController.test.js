@@ -213,7 +213,11 @@ describe('User Controller', () => {
       const response = await request
         .post('/users')
         .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
-        .send({ email: 'email@test.com', password: 'pAssw0rd!' });
+        .send({
+          email: 'email@test.com',
+          password: 'pAssw0rd!',
+          roles: ['patient'],
+        });
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe(
@@ -253,7 +257,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });

@@ -53,68 +53,55 @@ export const authorizeRequest = (method) => {
       const rolesData = await Role.find({ role: { $in: userRoles } });
 
       let hasPermission = false;
+      let canAssignRoles = true;
 
-      if (method === 'create') {
-        // Check for roles in the new user data for 'create' method
-        const newUserRoles = req.body.roles || [];
-        hasPermission = rolesData.some((role) => {
-          return role.permissions.some(
-            (permission) =>
-              permission.method === 'create' &&
-              newUserRoles.every((role) => permission.onRoles.includes(role))
-          );
-        });
-      } else {
-        // Check permissions for other methods (get, edit, delete, changePassword)
-        hasPermission = rolesData.some((role) => {
-          return role.permissions.some(
-            (permission) =>
-              permission.method === method &&
-              permission.onRoles.includes('himself')
-          );
-        });
+      // Check permissions for accessing endpoint
+      hasPermission = rolesData.some((role) => {
+        return role.permissions.some(
+          (permission) =>
+            permission.method === method
+        );
+      });
 
+      if (req.params && req.params.id) {
         const targetUserId = req.params.id;
         const targetUser = await User.findById(targetUserId);
         const targetUserRoles = targetUser ? targetUser.roles : [];
 
         // If the target user is not the same as the current user, check permissions
         if (targetUserId && targetUserId !== req.userId) {
-          hasPermission = rolesData.some((role) => {
-            return role.permissions.some(
-              (permission) =>
-                permission.method === method &&
-                targetUserRoles.every((role) =>
-                  permission.onRoles.includes(role)
-                )
-            );
-          });
-        }
-
-        // Additional check for 'edit' method to ensure the user has permissions to assign roles
-        if (method === 'edit' && req.body.roles) {
-          const newRoles = req.body.roles;
-          const canAssignRoles = rolesData.some((role) => {
-            return role.permissions.some(
-              (permission) =>
-                permission.method === 'edit' &&
-                newRoles.every((role) => permission.onRoles.includes(role))
-            );
-          });
-
-          if (!canAssignRoles) {
-            logger.warn('Forbidden', {
-              method: req.method,
-              url: req.originalUrl,
-              userId: req.userId,
-              ip: req.ip,
-            });
-            return res.status(403).json({ message: 'Forbidden' });
-          }
-        }
+          hasPermission = hasPermission &&
+                        rolesData.some((role) => {
+                          return role.permissions.some(
+                            (permission) =>
+                              targetUserRoles.every((role) =>
+                                permission.onRoles.includes(role)
+                              )
+                          );
+                        });
+        } else {
+          hasPermission = hasPermission &&
+                        rolesData.some((role) => {
+                          return role.permissions.some(
+                            (permission) =>
+                              permission.onRoles.includes('himself')
+                          );
+                        });
+        };
+      };
+      // Additional check for 'edit' method to ensure the user has permissions to assign roles
+      if (method === 'create' || method === 'edit' && req.body.roles) {
+        const newRoles = req.body.roles;
+        canAssignRoles = rolesData.some((role) => {
+          return role.permissions.some(
+            (permission) =>
+              permission.method === method &&
+                            newRoles.every((newrole) => permission.onRoles.includes(newrole))
+          );
+        });
       }
 
-      if (!hasPermission) {
+      if (!hasPermission || !canAssignRoles) {
         logger.warn('Forbidden', {
           method: req.method,
           url: req.originalUrl,
