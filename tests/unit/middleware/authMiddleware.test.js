@@ -1,83 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import User from '../../../src/schemas/User.js';
-import { checkRoles, userExists, hasAccessToUser } from '../../../src/middleware/authMiddleware.js';
+import Role from '../../../src/schemas/Role.js';
+import { userExists } from '../../../src/middleware/authMiddleware.js';
+import { authorizeRequest } from '../../../src/middleware/authMiddleware.js';
 
 afterEach(() => {
   vi.resetAllMocks();
 });
 
 describe('Auth Middleware', () => {
-  describe('validate role', () => {
-    it('should confirm one role', async () => {
-      const req = { userId: 'someId', roles: ['clinicadmin'] };
-      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      const next = vi.fn();
-
-      await checkRoles('clinicadmin')(req, res, next);
-
-      expect(next).toHaveBeenCalled();
-    });
-
-    it('should reject one role', async () => {
-      const req = { userId: 'someId', roles: ['clinicadmin'] };
-      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      const next = vi.fn();
-
-      await checkRoles('admin')(req, res, next);
-
-      expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
-      expect(next).not.toHaveBeenCalled();
-    });
-
-    it('should confirm many roles', async () => {
-      const req = { userId: 'someId', roles: ['clinicadmin', 'doctor', 'admin'] };
-      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      const next = vi.fn();
-
-      await checkRoles('clinicadmin', 'doctor', 'admin')(req, res, next);
-
-      expect(next).toHaveBeenCalled();
-    });
-
-    it('should reject one in many role', async () => {
-      const req = { userId: 'someId', roles: ['clinicadmin', 'doctor'] };
-      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      const next = vi.fn();
-
-      await checkRoles('clinicadmin', 'doctor', 'admin')(req, res, next);
-
-      expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
-      expect(next).not.toHaveBeenCalled();
-    });
-
-    it('should reject some in many role', async () => {
-      const req = { userId: 'someId', roles: ['doctor'] };
-      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      const next = vi.fn();
-
-      await checkRoles('clinicadmin', 'doctor', 'admin')(req, res, next);
-
-      expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
-      expect(next).not.toHaveBeenCalled();
-    });
-
-    it('should reject all roles', async () => {
-      const req = { userId: 'someId', roles: ['patient'] };
-      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      const next = vi.fn();
-
-      await checkRoles('clinicadmin', 'doctor', 'admin')(req, res, next);
-
-      expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
-      expect(next).not.toHaveBeenCalled();
-    });
-  });
-
   describe('userExists', () => {
     it('should find user and attach to request', async () => {
       vi.spyOn(User, 'findById').mockResolvedValue({
         _id: 'someId',
-        roles: ['patient']
+        roles: ['patient'],
       });
 
       const req = { params: { id: 'someId' } };
@@ -107,68 +43,229 @@ describe('Auth Middleware', () => {
     });
   });
 
-  describe('hasAccessToUser', () => {
-    it('should allow access for admin role', async () => {
-      const req = { userId: 'adminId', roles: ['admin'], params: { id: 'someUserId' } };
+  describe('authorizeRequest', () => {
+    it('should call next if user has permission', async () => {
+      const req = { method: 'get', originalUrl: '/users', userId: 'userId', ip: 'ip', roles: ['patient'], params: { id: 'userId' } };
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      await hasAccessToUser(req, res, next);
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['patient'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'patient',
+          permissions: [{ method: 'get', onRoles: ['himself'] }],
+        },
+      ]);
+      await authorizeRequest('get')(req, res, next);
 
       expect(next).toHaveBeenCalled();
     });
 
-    it('should allow access for clinicadmin role', async () => {
-      const req = { userId: 'clinicAdminId', roles: ['clinicadmin'], params: { id: 'someUserId' } };
+    it('should call next if can assign roles on create', async () => {
+      const req = {
+        method: 'create',
+        originalUrl: '/users',
+        userId: 'userId',
+        ip: 'ip',
+        roles: ['admin'],
+        body: {
+          email: 'email@test.com',
+          password: 'password',
+          roles: ['clinicadmin'],
+        }
+      };
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      await hasAccessToUser(req, res, next);
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'admin',
+          permissions: [{ method: 'create', onRoles: ['clinicadmin'] }],
+        },
+      ]);
+      await authorizeRequest('create')(req, res, next);
 
       expect(next).toHaveBeenCalled();
     });
 
-    it('should allow access for doctor role', async () => {
-      const req = { userId: 'doctorId', roles: ['doctor'], params: { id: 'someUserId' } };
+    it('should call next if can assign roles on edit', async () => {
+      const req = {
+        method: 'edit',
+        originalUrl: '/users',
+        userId: 'userId',
+        ip: 'ip',
+        roles: ['admin'],
+        params: { id: 'clinicId' },
+        body: {
+          roles: ['clinicadmin'],
+        }
+      };
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      await hasAccessToUser(req, res, next);
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'admin',
+          permissions: [
+            { method: 'edit', onRoles: ['clinicadmin'] },
+          ],
+        },
+      ]);
+      await authorizeRequest('edit')(req, res, next);
 
       expect(next).toHaveBeenCalled();
     });
 
-    it('should allow access for same user', async () => {
-      const req = { userId: 'someUserId', roles: ['patient'], params: { id: 'someUserId' } };
+    it('should return 400 if method is invalid', async () => {
+      const req = { method: 'invalidMethod', originalUrl: '/users' };
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      await hasAccessToUser(req, res, next);
+      await authorizeRequest('invalidMethod')(req, res, next);
 
-      expect(next).toHaveBeenCalled();
-    });
-
-    it('should deny access for different user without appropriate role', async () => {
-      const req = { userId: 'userId', roles: ['patient'], params: { id: 'otherUserId' } };
-      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
-      const next = vi.fn();
-
-      await hasAccessToUser(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Invalid method' });
       expect(next).not.toHaveBeenCalled();
     });
 
-    it('should deny access for user without appropriate role', async () => {
-      const req = { userId: 'userId', roles: ['patient'], params: { id: 'someOtherUserId' } };
+    it('should return 403 if user has no roles', async () => {
+      const req = { method: 'get', originalUrl: '/users', userId: 'userId', ip: 'ip' };
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      await hasAccessToUser(req, res, next);
+      await authorizeRequest('get')(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
+      expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 if user has no permission on method', async () => {
+      const req = { method: 'get', originalUrl: '/users', userId: 'userId', ip: 'ip', roles: ['patient'], params: { id: 'doctorId' } };
+      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+      const next = vi.fn();
+
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'doctorId', roles: ['doctor'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'patient',
+          permissions: [{ method: 'get', onRoles: ['himself'] }],
+        },
+      ]);
+
+      await authorizeRequest('get')(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 if user has no permission on roles on create', async () => {
+      const req = {
+        method: 'create',
+        originalUrl: '/users',
+        userId: 'userId',
+        ip: 'ip',
+        roles: ['admin'],
+        body: {
+          email: 'email@test.com',
+          password: 'password',
+          roles: ['clinicadmin'],
+        }
+      };
+
+      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+      const next = vi.fn();
+
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'admin',
+          permissions: [{ method: 'create', onRoles: ['patient'] }],
+        },
+      ]);
+      await authorizeRequest('create')(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 if user has no permission on roles on edit', async () => {
+      const req = {
+        method: 'edit',
+        originalUrl: '/users',
+        userId: 'userId',
+        ip: 'ip',
+        roles: ['admin'],
+        params: { id: 'clinicId' },
+        body: {
+          roles: ['clinicadmin'],
+        }
+      };
+      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+      const next = vi.fn();
+
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'admin',
+          permissions: [
+            { method: 'edit', onRoles: ['patient'] },
+          ],
+        },
+      ]);
+      await authorizeRequest('edit')(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 if user has no permission target user', async () => {
+      const req = {
+        method: 'edit',
+        originalUrl: '/users',
+        userId: 'userId',
+        ip: 'ip',
+        roles: ['doctor'],
+        params: { id: 'clinicId' },
+        body: {
+          roles: ['clinicadmin'],
+        }
+      };
+      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+      const next = vi.fn();
+
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'admin',
+          permissions: [
+            { method: 'edit', onRoles: ['patient'] },
+          ],
+        },
+      ]);
+      await authorizeRequest('edit')(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should return 500 on server error', async () => {
+      const req = { method: 'get', originalUrl: '/users', userId: 'userId', ip: 'ip', roles: ['patient'], params: { id: 'userId' } };
+      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+      const next = vi.fn();
+
+      vi.spyOn(User, 'findById').mockResolvedValue(new Error('Database error'));
+
+      await authorizeRequest('get')(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Internal server error' });
       expect(next).not.toHaveBeenCalled();
     });
   });

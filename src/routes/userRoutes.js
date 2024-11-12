@@ -8,11 +8,7 @@ import {
   logout,
 } from '../controllers/userController.js';
 import { validateToken, validate } from '../middleware/validationMiddleware.js';
-import {
-  checkRoles,
-  userExists,
-  hasAccessToUser,
-} from '../middleware/authMiddleware.js';
+import { userExists, authorizeRequest } from '../middleware/authMiddleware.js';
 import {
   userValidator,
   userEditValidator,
@@ -24,21 +20,25 @@ const router = express.Router();
 router.post(
   '/users',
   validateToken,
-  // CheckRoles must be changed for the planned permissions feature
-  checkRoles('clinicadmin'),
   validate(userValidator),
+  authorizeRequest('create'),
   createUser
 );
 
-router.get('/users/:id', validateToken, userExists, hasAccessToUser, getUser);
+router.get(
+  '/users/:id',
+  validateToken,
+  userExists,
+  authorizeRequest('get'),
+  getUser
+);
 
 router.put(
   '/users/:id',
   validateToken,
   userExists,
-  // hasAccessToUser must be changed for the planned permissions feature
-  hasAccessToUser,
   validate(userEditValidator),
+  authorizeRequest('edit'),
   editUser
 );
 
@@ -46,9 +46,7 @@ router.delete(
   '/users/:id',
   validateToken,
   userExists,
-  // hasAccessToUser must be changed for the planned permissions feature. A patient should not be able to delete itself.
-  hasAccessToUser,
-  validate(userEditValidator),
+  authorizeRequest('delete'),
   deleteUser
 );
 
