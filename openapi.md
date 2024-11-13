@@ -8,10 +8,10 @@ Authorization microservice for medical consultation application. Handles the aut
 
 | Method | Path | Description |
 | --- | --- | --- |
-| POST | [/change-password](#postchange-password) | Change user password |
 | POST | [/login](#postlogin) | User Login |
 | POST | [/logout](#postlogout) | User Logout |
 | POST | [/users](#postusers) | Create User |
+| POST | [/users/change-password](#postuserschange-password) | Change user password |
 | GET | [/users/{id}](#getusersid) | Retrieve user information |
 | PUT | [/users/{id}](#putusersid) | Update user information |
 | GET | [/validate](#getvalidate) | Validates the user's token. |
@@ -25,81 +25,6 @@ Authorization microservice for medical consultation application. Handles the aut
 | cookieAuth | [#/components/securitySchemes/cookieAuth](#componentssecurityschemescookieauth) |  |
 
 ## Path Details
-
-***
-
-### [POST]/change-password
-
-- Summary  
-Change user password
-
-- Description  
-Allows authenticated users to change their password.
-
-#### RequestBody
-
-- application/json
-
-```ts
-{
-  // The current password of the user.
-  currentPassword: string
-  // The new password to set.
-  newPassword: string
-}
-```
-
-#### Responses
-
-- 200 Password changed successfully
-
-`application/json`
-
-```ts
-{
-  message?: string
-}
-```
-
-- 401 Unauthorized or invalid current password
-
-`application/json`
-
-```ts
-{
-  message?: string
-}
-```
-
-- 403 Unauthorized access
-
-`application/json`
-
-```ts
-{
-  message?: string
-}
-```
-
-- 404 User not found
-
-`application/json`
-
-```ts
-{
-  message?: string
-}
-```
-
-- 500 Internal server error
-
-`application/json`
-
-```ts
-{
-  message?: string
-}
-```
 
 ***
 
@@ -258,6 +183,91 @@ cookieAuth
 ```
 
 - 500 undefined
+
+***
+
+### [POST]/users/change-password
+
+- Summary  
+Change user password
+
+- Description  
+Allows authenticated users to change their password.
+
+#### RequestBody
+
+- application/json
+
+```ts
+{
+  // The current password of the user.
+  currentPassword: string
+  // The new password to set.
+  newPassword: string
+}
+```
+
+#### Responses
+
+- 200 Password changed successfully
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 400 Invalid request
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 401 Unauthorized
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 403 Unauthorized access
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 404 User not found
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 500 Internal server error
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
 
 ***
 
