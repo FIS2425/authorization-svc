@@ -148,12 +148,12 @@ export const changePassword = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!(await user.comparePassword(currentPassword))) {
-      logger.error('Invalid password', {
+      logger.error('Invalid credentials', {
         method: req.method,
         url: req.originalUrl,
         userId: userId,
       });
-      return res.status(401).json({ message: 'Invalid password' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     user.password = newPassword;

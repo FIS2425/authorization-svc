@@ -312,7 +312,7 @@ paths:
               example:
                 message: "Internal server error"
 
-  /change-password:
+  /users/change-password:
     post:
       summary: Change user password
       description: Allows authenticated users to change their password.
@@ -347,8 +347,8 @@ paths:
                   message:
                     type: string
                     example: "Password changed successfully"
-        '401':
-          description: Unauthorized or invalid current password
+        '400':
+          description: Invalid request
           content:
             application/json:
               schema:
@@ -356,7 +356,17 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Invalid password"
+                    example: ""
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
         '403':
           description: Unauthorized access
           content:
