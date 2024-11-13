@@ -44,9 +44,8 @@ router.put(
 );
 
 router.post(
-  'users/change-password',
+  '/users/change-password',
   validateToken,
-  userExists,
   validate(changePasswordValidator),
   authorizeRequest('changePassword'),
   changePassword
