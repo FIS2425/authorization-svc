@@ -140,6 +140,44 @@ export const editUser = async (req, res) => {
   }
 };
 
+export const changePassword = async (req, res) => {
+  const userId = req.userId;
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!(await user.comparePassword(currentPassword))) {
+      logger.error('Invalid credentials', {
+        method: req.method,
+        url: req.originalUrl,
+        userId: userId,
+      });
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    deleteTokensByUserId(userId, req.cookies.token);
+
+    logger.info('Password changed successfully', {
+      method: req.method,
+      url: req.originalUrl,
+      userId: userId,
+    });
+
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    logger.error('Error when authenticating', {
+      method: req.method,
+      url: req.originalUrl,
+      error: error,
+    });
+    res.status(500).json({ message: 'Error when authenticating' });
+  }
+};
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
