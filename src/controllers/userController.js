@@ -112,7 +112,7 @@ export const editUser = async (req, res) => {
     roles && (user.roles = roles);
 
     if (password || roles) {
-      deleteTokensByUserId(userId, req.cookies.token);
+      await deleteTokensByUserId(userId, req.cookies.token);
     }
 
     await user.save();
@@ -159,7 +159,7 @@ export const changePassword = async (req, res) => {
     user.password = newPassword;
     await user.save();
 
-    deleteTokensByUserId(userId, req.cookies.token);
+    await deleteTokensByUserId(userId, req.cookies.token);
 
     logger.info('Password changed successfully', {
       method: req.method,
@@ -184,7 +184,7 @@ export const deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(userId);
 
-    deleteTokensByUserId(userId, req.cookies.token);
+    await deleteTokensByUserId(userId, req.cookies.token);
 
     logger.info('User deleted successfully', {
       method: req.method,
@@ -237,16 +237,12 @@ export const login = async (req, res) => {
       );
 
       // We save the token to the cache, so that in cases of emergy we can revoke it
-      redisClient.set(authToken, user._id.toString(), {
-        EX: parseInt(process.env.JWT_EXPIRATION) || 3600,
-      });
-      redisClient.set(refreshToken, user._id.toString(), {
-        EX: parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600,
-      });
+      redisClient.set(authToken, user._id.toString(), 'EX', parseInt(process.env.JWT_EXPIRATION) || 3600);
+      redisClient.set(refreshToken, user._id.toString(), 'EX', parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600);
 
       // We create an index to be able to search by userId
-      redisClient.sAdd(`user_tokens:${user._id.toString()}`, authToken);
-      redisClient.sAdd(`user_tokens:${user._id.toString()}`, refreshToken);
+      redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
+      redisClient.sadd(`user_tokens:${user._id.toString()}`, refreshToken);
 
       res.cookie('token', authToken, { httpOnly: true });
       res.cookie('refreshToken', refreshToken, { httpOnly: true });

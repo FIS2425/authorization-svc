@@ -35,8 +35,8 @@ beforeAll(async () => {
   await sampleUser.save();
   await clinicAdmin.save();
 
-  redisClient.set(sampleUserToken, sampleUser._id.toString(), async () => { });
-  redisClient.set(clinicAdminToken, clinicAdmin._id.toString(), async () => { });
+  redisClient.set(sampleUserToken, sampleUser._id.toString());
+  redisClient.set(clinicAdminToken, clinicAdmin._id.toString());
 });
 
 afterAll(async () => {
