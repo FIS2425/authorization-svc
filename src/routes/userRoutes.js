@@ -3,6 +3,8 @@ import {
   createUser,
   getUser,
   editUser,
+  changePassword,
+  deleteUser,
   login,
   logout,
 } from '../controllers/userController.js';
@@ -12,6 +14,7 @@ import {
   userValidator,
   userEditValidator,
   userLoginValidator,
+  changePasswordValidator,
 } from '../validators/userValidator.js';
 
 const router = express.Router();
@@ -39,6 +42,22 @@ router.put(
   validate(userEditValidator),
   authorizeRequest('edit'),
   editUser
+);
+
+router.delete(
+  '/users/:id',
+  validateToken,
+  userExists,
+  authorizeRequest('delete'),
+  deleteUser
+);
+
+router.post(
+  '/users/change-password',
+  validateToken,
+  validate(changePasswordValidator),
+  authorizeRequest('changePassword'),
+  changePassword
 );
 
 router.post('/login', validate(userLoginValidator), login);
