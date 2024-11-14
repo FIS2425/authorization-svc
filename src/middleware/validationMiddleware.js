@@ -37,7 +37,7 @@ export const validateToken = async (req, res, next) => {
         url: req.originalUrl,
         ip: req.ip,
       });
-      deleteToken(req.userId, token);
+      await deleteToken(req.userId, token);
       return res.status(401).json({ message: 'Token expired' });
     }
 

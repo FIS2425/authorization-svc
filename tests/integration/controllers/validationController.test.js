@@ -1,4 +1,4 @@
-import { describe, beforeAll, afterAll, it, vi, expect } from 'vitest';
+import { describe, beforeAll, afterAll, it, expect } from 'vitest';
 import { request } from '../../setup/setup'; // Assuming this is your request setup, like Supertest
 import { redisClient } from '../../../src/config/redis.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -39,9 +39,7 @@ describe('Validation Middleware', () => {
       { userId: sampleUser._id, roles: sampleUser.roles },
       process.env.VITE_JWT_SECRET
     );
-    redisClient.set(token, sampleUser._id.toString(), async () => {
-      console.log('Token set');
-    });
+    redisClient.set(token, sampleUser._id.toString());
   });
 
   it('should validate the token successfully', async () => {
@@ -74,7 +72,7 @@ describe('Validation Middleware', () => {
 
   it('should return 401 with token expired in dragonfly', async () => {
     // From here on out redis will not need to be accessed, so we can safely delete the token
-    redisClient.del(token, () => { });
+    await redisClient.del(token);
 
     const expiredToken = jwt.sign(
       { userId: sampleUser._id, roles: sampleUser.roles },

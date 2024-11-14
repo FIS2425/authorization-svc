@@ -112,7 +112,7 @@ export const editUser = async (req, res) => {
     roles && (user.roles = roles);
 
     if (password || roles) {
-      deleteTokensByUserId(userId, req.cookies.token);
+      await deleteTokensByUserId(userId, req.cookies.token);
     }
 
     await user.save();
@@ -129,6 +129,36 @@ export const editUser = async (req, res) => {
     res.status(200).json(userWithoutPassword);
   } catch (error) {
     logger.error('Error updating user', {
+      method: req.method,
+      url: req.originalUrl,
+      error: error.message,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    await User.findByIdAndDelete(userId);
+
+    await deleteTokensByUserId(userId, req.cookies.token);
+
+    logger.info('User deleted successfully', {
+      method: req.method,
+      url: req.originalUrl,
+      user: userId,
+      userId: req.userId,
+      ip: req.ip,
+    });
+    res.status(204).json({ _id: req.userId });
+  }
+  catch (error) {
+    logger.error('Error deleting user', {
       method: req.method,
       url: req.originalUrl,
       error: error.message,
@@ -169,16 +199,12 @@ export const login = async (req, res) => {
       );
 
       // We save the token to the cache, so that in cases of emergy we can revoke it
-      redisClient.set(authToken, user._id.toString(), {
-        EX: parseInt(process.env.JWT_EXPIRATION) || 3600,
-      });
-      redisClient.set(refreshToken, user._id.toString(), {
-        EX: parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600,
-      });
+      redisClient.set(authToken, user._id.toString(), 'EX', parseInt(process.env.JWT_EXPIRATION) || 3600);
+      redisClient.set(refreshToken, user._id.toString(), 'EX', parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600);
 
       // We create an index to be able to search by userId
-      redisClient.sAdd(`user_tokens:${user._id.toString()}`, authToken);
-      redisClient.sAdd(`user_tokens:${user._id.toString()}`, refreshToken);
+      redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
+      redisClient.sadd(`user_tokens:${user._id.toString()}`, refreshToken);
 
       res.cookie('token', authToken, { httpOnly: true });
       res.cookie('refreshToken', refreshToken, { httpOnly: true });
