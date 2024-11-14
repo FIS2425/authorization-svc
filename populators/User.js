@@ -20,32 +20,32 @@ const sampleUsers = [
   {
     _id: uuidv4(),
     email: 'admin@cloudmedix.com',
-    password: 'admin123', // This will be hashed before saving
+    password: 'Admin.123', // This will be hashed before saving
     roles: ['admin'],
   },
   {
     _id: uuidv4(),
     email: 'clinicadmin@cloudmedix.com',
-    password: 'clinicadmin123',
+    password: 'Clinicadmin.123',
     roles: ['clinicadmin'],
   },
   {
     _id: uuidv4(),
     email: 'doctor@cloudmedix.com',
-    password: 'doctor123',
+    password: 'Doctor.123',
     roles: ['doctor'],
   },
   {
     _id: uuidv4(),
     email: 'patient@cloudmedix.com',
-    password: 'patient123',
+    password: 'Patient.123',
     roles: ['patient'],
     patientid: 'patient12345',
   },
   {
     _id: uuidv4(),
     email: 'multiuser@cloudmedix.com',
-    password: 'multiuser123',
+    password: 'Multiuser.123',
     roles: ['doctor', 'clinicadmin'],
     doctorid: uuidv4(),
   },
