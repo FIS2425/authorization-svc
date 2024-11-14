@@ -7,6 +7,7 @@ import {
   deleteUser,
   login,
   logout,
+  enable2FA,
 } from '../controllers/userController.js';
 import { validateToken, validate } from '../middleware/validationMiddleware.js';
 import { userExists, authorizeRequest } from '../middleware/authMiddleware.js';
@@ -63,5 +64,7 @@ router.post(
 router.post('/login', validate(userLoginValidator), login);
 
 router.post('/logout', logout);
+
+router.post('/users/enable-2fa', validateToken, enable2FA);
 
 export default router;

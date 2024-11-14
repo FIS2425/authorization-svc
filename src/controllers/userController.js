@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import speakeasy from 'speakeasy';
+import qrcode from 'qrcode';
 import User from '../schemas/User.js';
 import logger from '../config/logger.js';
 import { redisClient, deleteTokensByUserId } from '../config/redis.js';
@@ -194,8 +196,7 @@ export const deleteUser = async (req, res) => {
       ip: req.ip,
     });
     res.status(204).json({ _id: req.userId });
-  }
-  catch (error) {
+  } catch (error) {
     logger.error('Error deleting user', {
       method: req.method,
       url: req.originalUrl,
@@ -237,8 +238,18 @@ export const login = async (req, res) => {
       );
 
       // We save the token to the cache, so that in cases of emergy we can revoke it
-      redisClient.set(authToken, user._id.toString(), 'EX', parseInt(process.env.JWT_EXPIRATION) || 3600);
-      redisClient.set(refreshToken, user._id.toString(), 'EX', parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600);
+      redisClient.set(
+        authToken,
+        user._id.toString(),
+        'EX',
+        parseInt(process.env.JWT_EXPIRATION) || 3600
+      );
+      redisClient.set(
+        refreshToken,
+        user._id.toString(),
+        'EX',
+        parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600
+      );
 
       // We create an index to be able to search by userId
       redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
@@ -309,5 +320,40 @@ export const logout = async (req, res) => {
       });
       res.status(200).json({ message: 'Logout successful' });
     }
-  };
+  }
+};
+
+export const enable2FA = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    const secret = speakeasy.generateSecret({ name: 'CloudMedix' });
+
+    user.totpSecret = secret.base32;
+    await user.save();
+
+    qrcode.toDataURL(secret.otpauth_url, (err, qrCodeUrl) => {
+      if (err) {
+        logger.error('Error generating QR code', {
+          method: req.method,
+          url: req.originalUrl,
+          error: err,
+          userId: req.userId,
+        });
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      return res
+        .status(200)
+        .json({ message: '2FA enabled successfully', qrCodeUrl });
+    });
+  } catch (error) {
+    logger.error('Error enabling 2FA', {
+      method: req.method,
+      url: req.originalUrl,
+      error: error.message,
+      userId: req.userId,
+    });
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };

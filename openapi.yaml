@@ -468,6 +468,66 @@ paths:
                     type: string
                     example: "Error when authenticating" 
 
+  /users/enable-2fa:
+    post:
+      summary: Enable two-factor authentication
+      description: Allows authenticated users to enable two-factor authentication.
+      tags:
+        - Users
+      requestBody:
+        description: The request does not require any parameters.
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: 2FA successfully enabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "2FA enabled successfully"
+                  qrCodeUrl:
+                    type: string
+                    format: uri
+                    example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bad request"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
+
   /login:
     post:
       summary: User Login
