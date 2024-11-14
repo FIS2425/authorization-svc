@@ -144,9 +144,7 @@ export const deleteUser = async (req, res) => {
   const userId = req.params.id;
 
   try {
-    const user = await User.findById(userId);
-
-    await user.delete();
+    await User.findByIdAndDelete(userId);
 
     deleteTokensByUserId(userId, req.cookies.token);
 
