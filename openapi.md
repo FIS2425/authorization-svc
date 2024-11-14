@@ -12,6 +12,7 @@ Authorization microservice for medical consultation application. Handles the aut
 | POST | [/logout](#postlogout) | User Logout |
 | POST | [/users](#postusers) | Create User |
 | POST | [/users/change-password](#postuserschange-password) | Change user password |
+| DELETE | [/users/{id}](#deleteusersid) | Deletes user |
 | GET | [/users/{id}](#getusersid) | Retrieve user information |
 | PUT | [/users/{id}](#putusersid) | Update user information |
 | GET | [/validate](#getvalidate) | Validates the user's token. |
@@ -230,6 +231,68 @@ Allows authenticated users to change their password.
 ```
 
 - 401 Unauthorized
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 403 Unauthorized access
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 404 User not found
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 500 Internal server error
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+***
+
+### [DELETE]/users/{id}
+
+- Summary  
+Deletes user
+
+- Description  
+Delete user by user ID. Requires the user to have specific roles.
+
+#### Responses
+
+- 204 User deleted successfully
+
+`application/json`
+
+```ts
+{
+  _id?: string
+}
+```
+
+- 401 Unautenticated
 
 `application/json`
 

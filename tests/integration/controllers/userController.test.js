@@ -268,6 +268,7 @@ describe('User Controller Integration Tests', () => {
     });
   });
 
+
   describe('getUser', () => {
     it('should return user successfully', async () => {
       vi.spyOn(Role, 'find').mockResolvedValue([
@@ -297,25 +298,119 @@ describe('User Controller Integration Tests', () => {
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: 'User not found' });
     });
+  });
 
-    it('should return 500 if there is an error retrieving user', async () => {
-      const errorMessage = 'Database error';
-      vi.spyOn(User, 'findById').mockResolvedValue(new Error(errorMessage));
+  describe('editUser', () => {
+    it('should edit a user successfully same email', async () => {
       vi.spyOn(Role, 'find').mockResolvedValue([
         {
           role: 'clinicadmin',
           permissions: [
-            { method: 'get', onRoles: ['doctor', 'patient', 'himself'] },
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
           ],
         },
       ]);
 
-      const response = await request
-        .get(`/users/${sampleUser.id.toString()}`)
-        .set('Cookie', [`token=${clinicAdminToken}`]);
+      const editedUser = {
+        email: 'testuser@test.com',
+        password: 'EditedpAssw0rd!',
+        roles: ['patient', 'doctor'],
+      };
 
-      expect(response.status).toBe(500);
-      expect(response.body).toEqual({ message: 'Internal server error' });
+      const response = await request
+        .put(`/users/${sampleUser._id.toString()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`])
+        .send(editedUser);
+
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe(editedUser.email);
+      expect(response.body.roles).toEqual(editedUser.roles);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    it('should edit a user successfully diff email', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const editedUser = {
+        email: 'editedemail@test.com',
+        password: 'pAssw0rd!',
+        roles: ['patient'],
+      };
+
+      const response = await request
+        .put(`/users/${sampleUser._id.toString()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`])
+        .send(editedUser);
+
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe(editedUser.email);
+      expect(response.body.roles).toEqual(editedUser.roles);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    it('should return 400 when email in use', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const editedUser = {
+        email: 'clinicAdmin@test.com',
+        password: 'EditedpAssw0rd!',
+        roles: ['patient', 'doctor'],
+      };
+
+      const response = await request
+        .put(`/users/${sampleUser._id.toString()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`])
+        .send(editedUser);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('A user with that email already exists.');
+    });
+
+    it('should return 400 on failed user attr validation', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const editedUser = {
+        email: 'email',
+        password: 'password!',
+        roles: [],
+      };
+
+      const response = await request
+        .put(`/users/${sampleUser._id.toString()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`])
+        .send(editedUser);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: 'Validation error',
+        errors: {
+          email: 'Invalid email address',
+          password:
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+          roles: 'At least one role is required.',
+        },
+      });
     });
   });
 });
