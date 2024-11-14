@@ -3,6 +3,7 @@ import {
   createUser,
   getUser,
   editUser,
+  changePassword,
   deleteUser,
   login,
   logout,
@@ -13,6 +14,7 @@ import {
   userValidator,
   userEditValidator,
   userLoginValidator,
+  changePasswordValidator,
 } from '../validators/userValidator.js';
 
 const router = express.Router();
@@ -48,6 +50,14 @@ router.delete(
   userExists,
   authorizeRequest('delete'),
   deleteUser
+);
+
+router.post(
+  '/users/change-password',
+  validateToken,
+  validate(changePasswordValidator),
+  authorizeRequest('changePassword'),
+  changePassword
 );
 
 router.post('/login', validate(userLoginValidator), login);

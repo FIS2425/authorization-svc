@@ -86,3 +86,18 @@ export const userLoginValidator = z.object({
     .email('Invalid email address'),
   password: z.string({ required_error: 'Password is required' }),
 });
+
+export const changePasswordValidator = z.object({
+  currentPassword: z.string({ required_error: 'Current password is required' }),
+  newPassword: z
+    .string({ required_error: 'New password is required' })
+    .min(8, 'Password must be at least 8 characters long')
+    .max(32, 'Password must be at most 32 characters long')
+    .regex(
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])/,
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    )
+    .refine((password) => {
+      return !/\s/.test(password);
+    }, 'Password must not contain spaces'),
+});
