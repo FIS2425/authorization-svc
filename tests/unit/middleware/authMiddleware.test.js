@@ -179,7 +179,7 @@ describe('Auth Middleware', () => {
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'clinicadminId', roles: ['clinicadmin'] });
       vi.spyOn(Role, 'find').mockResolvedValue([
         {
           role: 'admin',
@@ -208,7 +208,7 @@ describe('Auth Middleware', () => {
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'clinicadminId', roles: ['clinicadmin'] });
       vi.spyOn(Role, 'find').mockResolvedValue([
         {
           role: 'admin',
@@ -239,7 +239,7 @@ describe('Auth Middleware', () => {
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'userId', roles: ['clinicadmin'] });
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'clinicadminId', roles: ['clinicadmin'] });
       vi.spyOn(Role, 'find').mockResolvedValue([
         {
           role: 'admin',
@@ -249,6 +249,35 @@ describe('Auth Middleware', () => {
         },
       ]);
       await authorizeRequest('edit')(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should return 403 if user has permissions on target user on A method but not on B method', async () => {
+      const req = {
+        method: 'edit',
+        originalUrl: '/users',
+        userId: 'userId',
+        ip: 'ip',
+        roles: ['doctor'],
+        params: { id: 'clinicId' },
+      };
+      const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+      const next = vi.fn();
+
+      vi.spyOn(User, 'findById').mockResolvedValue({ userId: 'clinicId', roles: ['clinicadmin'] });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'admin',
+          permissions: [
+            { method: 'edit', onRoles: ['clinicadmin'] },
+            { method: 'get', onRoles: ['patient'] },
+          ],
+        },
+      ]);
+      await authorizeRequest('get')(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });

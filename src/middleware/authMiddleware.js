@@ -68,15 +68,16 @@ export const authorizeRequest = (method) => {
         const targetUser = await User.findById(targetUserId);
         const targetUserRoles = targetUser ? targetUser.roles : [];
 
-        // If the target user is not the same as the current user, check permissions
+        // If the target user is not the same as the current user, check permissions on current method
         if (targetUserId && targetUserId !== req.userId) {
           hasPermission = hasPermission &&
                         rolesData.some((role) => {
                           return role.permissions.some(
                             (permission) =>
-                              targetUserRoles.every((role) =>
-                                permission.onRoles.includes(role)
-                              )
+                              permission.method === method &&
+                                    targetUserRoles.every((onRole) =>
+                                      permission.onRoles.includes(onRole)
+                                    )
                           );
                         });
         } else {
@@ -84,7 +85,8 @@ export const authorizeRequest = (method) => {
                         rolesData.some((role) => {
                           return role.permissions.some(
                             (permission) =>
-                              permission.onRoles.includes('himself')
+                              permission.method === method &&
+                                    permission.onRoles.includes('himself')
                           );
                         });
         };
