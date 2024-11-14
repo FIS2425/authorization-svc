@@ -17,10 +17,10 @@ export default function () {
   app.use(cookieParser());
 
   // Register routes
-  app.use('/', userRoutes);
-  app.use('/', validationRoutes);
+  app.use(`${process.env.API_PREFIX || '/'}`, userRoutes);
+  app.use(`${process.env.API_PREFIX || '/'}`, validationRoutes);
 
-  app.get('/', (req, res) => {
+  app.get(`${process.env.API_PREFIX || '/'}`, (req, res) => {
     res.send('API funcionando correctamente');
   });
 
