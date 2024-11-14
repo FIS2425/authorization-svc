@@ -1,7 +1,7 @@
 FROM node:lts-alpine
 
 # TODO: Cambiar el nombre de la carpeta por el nombre de tu proyecto
-WORKDIR /authotization-svc
+WORKDIR /authorization-svc
 
 COPY . .
 
