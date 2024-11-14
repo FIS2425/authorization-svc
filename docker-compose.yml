@@ -4,50 +4,52 @@ services:
   dragonfly:
     restart: unless-stopped
     image: ghcr.io/dragonflydb/dragonfly:latest
-    container_name: dragonfly
+    container_name: dragonfly-auth
     ports:
       - '6379:6379'
     networks:
-      - backend
+      - authorization
     volumes:
-      - dragonfly-data:/data/dragonfly
+      - dragonfly-auth:/data/dragonfly
 
   mongodb:
     restart: unless-stopped
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongodb-auth
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGOADMIN}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGOPASS}
     networks:
-      - backend
+      - authorization
     ports:
       - '27017:27017'
     volumes:
-      - mongo-data:/data/db
+      - mongo-auth:/data/db
 
-  authotization-svc:
+  authorization-svc:
     restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: authotization-svc
+    container_name: authorization-svc
     environment:
       - MONGODB_URL=${MONGOURL}
+      - API_PREFIX=${API_PREFIX}
+      - NODE_ENV=production
     depends_on:
       - mongodb
+      - dragonfly
     networks:
-      - backend
+      - authorization
     ports:
       - '3001:3001'
     volumes:
-      - .:/authorization
+      - .:/authorization-svc:z
 
 volumes:
-  authotization-svc:
-  mongo-data:
-  dragonfly-data:
+  mongo-auth:
+  dragonfly-auth:
 
 networks:
-  backend:
+  authorization:
     driver: bridge
