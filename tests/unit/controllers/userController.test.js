@@ -263,6 +263,172 @@ describe('User Controller', () => {
     });
   });
 
+  describe('editUser', () => {
+    // Mock middlewares
+    beforeEach(() => {
+      const user = {
+        email: 'email@test.com',
+        password: 'password',
+        roles: ['clinicadmin'],
+      };
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({
+        userId: 'userId',
+        roles: ['clinicadmin'],
+      });
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
+    });
+
+    it('should edit a user successfully same email', async () => {
+      const user = {
+        _id: 'userId',
+        email: 'email@test.com',
+        password: 'password',
+        roles: ['patient'],
+      };
+      user.toObject = vi.fn().mockReturnValue(user);
+      user.save = vi.fn().mockReturnThis();
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(User, 'findOne').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .put('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
+        .send({
+          email: 'email@test.com',
+          password: 'pAssw0rd!',
+          roles: ['patient'],
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe(user.email);
+      expect(response.body.roles).toEqual(user.roles);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    it('should edit a user successfully diff email', async () => {
+      const user = {
+        _id: 'userId',
+        email: 'email@test.com',
+        password: 'password',
+        roles: ['patient'],
+      };
+      user.toObject = vi.fn().mockReturnValue(user);
+      user.save = vi.fn().mockReturnThis();
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(User, 'findOne').mockResolvedValue(null);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .put('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
+        .send({
+          email: 'email@test2.com',
+          password: 'pAssw0rd!',
+          roles: ['patient'],
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.email).toBe(user.email);
+      expect(response.body.roles).toEqual(user.roles);
+      expect(response.body).not.toHaveProperty('password');
+    });
+
+    it('should return 400 when email in use', async () => {
+      const user = {
+        _id: 'userId',
+        email: 'email@test.com',
+        password: 'password',
+        roles: ['patient'],
+      };
+      user.toObject = vi.fn().mockReturnValue(user);
+      user.save = vi.fn().mockReturnThis();
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(User, 'findOne').mockResolvedValue({
+        _id: 'userId2',
+      });
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .put('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
+        .send({
+          email: 'email@test2.com',
+          password: 'pAssw0rd!',
+          roles: ['patient'],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('A user with that email already exists.');
+    });
+
+    it('should return 400 on failed user attr validation', async () => {
+      const user = {
+        _id: 'userId',
+        email: 'email@test.com',
+        password: 'password',
+        roles: ['patient'],
+      };
+      user.toObject = vi.fn().mockReturnValue(user);
+      user.save = vi.fn().mockReturnThis();
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'edit', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .put('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
+        .send({
+          email: 'email',
+          password: 'password!',
+          roles: [],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: 'Validation error',
+        errors: {
+          email: 'Invalid email address',
+          password:
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+          roles: 'At least one role is required.',
+        },
+      });
+    });
+  });
+
   describe('getUser', () => {
     // Mock middlewares
     beforeEach(() => {
