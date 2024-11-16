@@ -235,7 +235,7 @@ export const login = async (req, res) => {
 
         // We return a 200 status code to indicate that the user must now verify the 2FA token
         return res.status(200).json({
-          message: 'Credentials validated',
+          message: 'Credentials validated, please verify 2FA token',
           userId: user._id.toString(),
         });
       }
