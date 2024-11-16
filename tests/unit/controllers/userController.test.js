@@ -257,7 +257,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });
@@ -384,7 +384,9 @@ describe('User Controller', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('A user with that email already exists.');
+      expect(response.body.message).toBe(
+        'A user with that email already exists.'
+      );
     });
 
     it('should return 400 on failed user attr validation', async () => {
@@ -422,7 +424,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
           roles: 'At least one role is required.',
         },
       });
@@ -497,6 +499,93 @@ describe('User Controller', () => {
 
       const response = await request
         .get('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+
+  describe('deleteUser', () => {
+    beforeEach(() => {
+      const user = {
+        email: 'email@test.com',
+        password: 'password',
+        roles: ['clinicadmin'],
+      };
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({
+        userId: 'userId',
+        roles: ['clinicadmin'],
+      });
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
+    });
+
+    it('should delete user successfully', async () => {
+      const user = {
+        _id: 'userId',
+        email: 'email@email.com',
+        password: 'password',
+        roles: ['doctor'],
+      };
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(User, 'findOne').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'delete', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+      vi.spyOn(User, 'findByIdAndDelete').mockResolvedValue(user);
+      vi.spyOn(redisClient, 'del').mockResolvedValue(true);
+
+      const response = await request
+        .delete('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
+
+      expect(response.status).toBe(204);
+    });
+
+    it('should return 404 if user is not found', async () => {
+      const user = {
+        _id: 'userId',
+        email: 'email@email.com',
+        password: 'password',
+        roles: ['doctor'],
+      };
+
+      vi.spyOn(User, 'findById')
+        .mockReturnValueOnce(user)
+        .mockResolvedValue(null);
+      vi.spyOn(User, 'findOne').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'delete', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .delete('/users/userId')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'User not found' });
+    });
+
+    it('should return 500 if there is an error deleting user', async () => {
+      const errorMessage = 'Database error';
+      vi.spyOn(User, 'findByIdAndDelete').mockRejectedValue(
+        new Error(errorMessage)
+      );
+
+      const response = await request
+        .delete('/users/userId')
         .set('Cookie', ['token=authToken&refreshToken=refreshToken']);
 
       expect(response.status).toBe(500);
