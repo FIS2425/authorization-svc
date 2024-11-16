@@ -257,7 +257,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });
@@ -384,7 +384,9 @@ describe('User Controller', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('A user with that email already exists.');
+      expect(response.body.message).toBe(
+        'A user with that email already exists.'
+      );
     });
 
     it('should return 400 on failed user attr validation', async () => {
@@ -422,7 +424,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
           roles: 'At least one role is required.',
         },
       });
@@ -501,6 +503,121 @@ describe('User Controller', () => {
 
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ message: 'Internal server error' });
+    });
+  });
+
+  describe('changePassword', () => {
+    beforeEach(() => {
+      vi.spyOn(jwt, 'verify').mockReturnValueOnce({
+        userId: 'userId',
+        roles: ['clinicadmin'],
+      });
+      vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
+    });
+
+    it('should change password successfully', async () => {
+      const user = new User({
+        _id: 'userId',
+        email: 'email@email.com',
+        password: 'password',
+        roles: ['doctor'],
+      });
+      user.comparePassword = vi.fn().mockResolvedValue(true);
+      user.save = vi.fn().mockReturnThis();
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            {
+              method: 'changePassword',
+              onRoles: ['doctor', 'patient', 'himself'],
+            },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .post('/users/change-password')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
+        .send({
+          currentPassword: 'password',
+          newPassword: 'newPassword!123',
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Password changed successfully');
+    });
+
+    it('should return 401 if old password is incorrect', async () => {
+      const user = new User({
+        _id: 'userId',
+        email: 'email@email.com',
+        password: 'password',
+        roles: ['doctor'],
+      });
+      user.comparePassword = vi.fn().mockResolvedValue(false);
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            {
+              method: 'changePassword',
+              onRoles: ['doctor', 'patient', 'himself'],
+            },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .post('/users/change-password')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
+        .send({
+          currentPassword: 'wrongPassword',
+          newPassword: 'newPassword!123',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid credentials');
+    });
+
+    it('should return 500 on error changing password', async () => {
+      const user = new User({
+        _id: 'userId',
+        email: 'email@email.com',
+        password: 'password',
+        roles: ['doctor'],
+      });
+      user.comparePassword = vi
+        .fn()
+        .mockRejectedValue(new Error('Database error'));
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            {
+              method: 'changePassword',
+              onRoles: ['doctor', 'patient', 'himself'],
+            },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .post('/users/change-password')
+        .set('Cookie', ['token=authToken&refreshToken=refreshToken'])
+        .send({
+          currentPassword: 'password',
+          newPassword: 'newPassword!123',
+        });
+
+      expect(response.status).toBe(500);
+      expect(response.body.message).toBe('Error when authenticating');
     });
   });
 });
