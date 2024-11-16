@@ -193,9 +193,8 @@ export const deleteUser = async (req, res) => {
       userId: req.userId,
       ip: req.ip,
     });
-    res.status(204).json({ _id: req.userId });
-  }
-  catch (error) {
+    res.status(204);
+  } catch (error) {
     logger.error('Error deleting user', {
       method: req.method,
       url: req.originalUrl,
@@ -237,8 +236,18 @@ export const login = async (req, res) => {
       );
 
       // We save the token to the cache, so that in cases of emergy we can revoke it
-      redisClient.set(authToken, user._id.toString(), 'EX', parseInt(process.env.JWT_EXPIRATION) || 3600);
-      redisClient.set(refreshToken, user._id.toString(), 'EX', parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600);
+      redisClient.set(
+        authToken,
+        user._id.toString(),
+        'EX',
+        parseInt(process.env.JWT_EXPIRATION) || 3600
+      );
+      redisClient.set(
+        refreshToken,
+        user._id.toString(),
+        'EX',
+        parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600
+      );
 
       // We create an index to be able to search by userId
       redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
@@ -309,5 +318,5 @@ export const logout = async (req, res) => {
       });
       res.status(200).json({ message: 'Logout successful' });
     }
-  };
+  }
 };
