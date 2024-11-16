@@ -528,6 +528,72 @@ paths:
                     type: string
                     example: "Internal server error"
 
+  /users/verify-2fa:
+    post:
+      summary: Verify two-factor authentication
+      description: Allows authenticated users to verify two-factor authentication.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's unique ID.
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+                totpToken:
+                  type: string
+                  description: The two-factor authentication token.
+                  example: "123456"
+              required:
+                - userId
+                - totpToken
+      responses:
+        '200':
+          description: 2FA token verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "2FA not enabled for this user"
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Invalid 2FA token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
   /login:
     post:
       summary: User Login
