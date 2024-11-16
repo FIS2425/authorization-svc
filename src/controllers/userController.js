@@ -193,7 +193,7 @@ export const deleteUser = async (req, res) => {
       userId: req.userId,
       ip: req.ip,
     });
-    res.status(204);
+    res.status(204).send();
   } catch (error) {
     logger.error('Error deleting user', {
       method: req.method,
