@@ -6,7 +6,7 @@ export const validate = async (req, res) => {
     method: req.method,
     url: req.originalUrl,
     userId: req.userId,
-    ip: req.ip,
+    ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
   });
   res.status(200).json({ message: 'Token is valid' });
 };
