@@ -195,7 +195,7 @@ export const deleteUser = async (req, res) => {
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
-    res.status(204).json({ _id: req.userId });
+    res.status(204).send();
   } catch (error) {
     logger.error('Error deleting user', {
       method: req.method,
@@ -218,9 +218,8 @@ export const login = async (req, res) => {
       res.status(401).json({ message: 'User not found' });
     } else if (await user.comparePassword(password)) {
       if (user.totpSecret) {
-        const sessionKey = `2fa_pending:${user._id.toString()}:${req.headers &&
-                    req.headers['x-forwarded-for'] ||
-                    req.ip
+        const sessionKey = `2fa_pending:${user._id.toString()}:${
+          (req.headers && req.headers['x-forwarded-for']) || req.ip
         }`;
 
         redisClient.set(
@@ -389,9 +388,8 @@ export const verify2FA = async (req, res) => {
   const { userId, totpToken } = req.body;
 
   try {
-    const sessionKey = `2fa_pending:${userId}:${req.headers &&
-            req.headers['x-forwarded-for'] ||
-            req.ip
+    const sessionKey = `2fa_pending:${userId}:${
+      (req.headers && req.headers['x-forwarded-for']) || req.ip
     }`;
 
     const sessionExists = await redisClient.exists(sessionKey);
