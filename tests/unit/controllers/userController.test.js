@@ -550,7 +550,7 @@ describe('User Controller', () => {
       expect(response.body.message).toBe('Password changed successfully');
     });
 
-    it('should return 401 if old password is incorrect', async () => {
+    it('should return 400 if old password is incorrect', async () => {
       const user = new User({
         _id: 'userId',
         email: 'email@email.com',
