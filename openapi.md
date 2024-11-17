@@ -282,15 +282,6 @@ Enable two-factor authentication
 - Description  
 Allows authenticated users to enable two-factor authentication.
 
-#### RequestBody
-
-- application/json
-
-```ts
-{
-}
-```
-
 #### Responses
 
 - 200 2FA successfully enabled
