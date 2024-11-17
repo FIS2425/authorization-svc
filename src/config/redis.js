@@ -17,7 +17,6 @@ export async function deleteTokensByUserId(userId, excludeToken) {
     }
   } catch (error) {
     logger.error('Error deleting tokens for user', {
-      method: 'DELETE',
       userId,
       error: error.message,
       stack: error.stack,
@@ -34,7 +33,6 @@ export async function deleteToken(userId, token) {
     }
   } catch (error) {
     logger.error('Error deleting token for user', {
-      method: 'DELETE',
       userId,
       error: error.message,
       stack: error.stack,
