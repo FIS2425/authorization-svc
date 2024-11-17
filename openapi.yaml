@@ -474,14 +474,6 @@ paths:
       description: Allows authenticated users to enable two-factor authentication.
       tags:
         - Users
-      requestBody:
-        description: The request does not require any parameters.
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties: {}
       responses:
         '200':
           description: 2FA successfully enabled
