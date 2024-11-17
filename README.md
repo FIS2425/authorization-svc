@@ -1,4 +1,4 @@
-# Template: Node.js Microservice
+# Authorization  Microservice
 
 ## ⚙️ Project Setup
 
@@ -44,6 +44,45 @@ For automatic linting fixes, use:
 
 ```bash
 npm run lint-fix
+```
+
+### 6. Testing 🧪
+
+To run tests, use the following command:
+
+```bash
+npm test
+```
+
+### 7. Populating the Database 📚
+
+To populate the database with sample data, run:
+
+```bash
+npm run populate <FileName>
+```
+
+### 8. Logging 📝
+
+To add logs to your application, use the `logger` object provided in the `config/logger.js` file. The logger is configured to write logs to the console and a file in the `logs` directory. There are five log levels available:
+- `error`
+- `warn`
+- `info`
+- `http`
+- `verbose`
+- `debug`
+
+#### Example:
+You can log messages adding the following code to your methods:
+
+```javascript
+logger.error('This is an error message');
+logger.http('Incoming HTTP request', {
+  method: 'GET',
+  url: '/api/appointments',
+  userUid: 'a71b0cbd-7edd-4ae1-919b-403a33fba2eb',
+  params: { date: '2024-11-04', status: 'confirmed' }
+});
 ```
 
 ## Docker Setup 🐳

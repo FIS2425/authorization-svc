@@ -4,17 +4,19 @@ on:
   push:
     branches:
       - main
+      - develop
     tags:
       - "*.*.*"
   pull_request:
     branches:
       - main
+      - develop
     types:
       - labeled
 
 env:
-  REGISTRY_IMAGE: ${{ secrets.DOCKER_USERNAME }}/AQUÍ_VA_EL_NOMBRE_DE_TU_IMAGEN_SIN_MAYUSCULAS
-  GHCR_IMAGE: fis2425/AQUÍ_VA_EL_NOMBRE_DE_TU_IMAGEN_SIN_MAYUSCULAS
+  REGISTRY_IMAGE: ${{ secrets.DOCKER_USERNAME }}/authorization
+  GHCR_IMAGE: fis2425/authorization
   PR_ID: ${{ github.event.pull_request.number }}
   TAG: ${{ github.ref_name }}
 
@@ -66,6 +68,7 @@ jobs:
           tags: |
             ${{ startsWith(github.ref, 'refs/tags/') && format('{0}:{1}', env.REGISTRY_IMAGE, env.TAG) || '' }}
             ${{ github.ref == 'refs/heads/main' && format('{0}:latest', env.REGISTRY_IMAGE) || '' }}
+            ${{ github.ref == 'refs/heads/develop' && format('{0}:unstable', env.REGISTRY_IMAGE) || '' }}
             ${{ github.event_name == 'pull_request' && format('{0}:PR.{1}', env.REGISTRY_IMAGE, env.PR_ID) || '' }}
 
       - name: Build and Push Ghcr Image
@@ -80,4 +83,5 @@ jobs:
           tags: |
             ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}:{1}', env.GHCR_IMAGE, env.TAG) || '' }}
             ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}:latest', env.GHCR_IMAGE) || '' }}
+            ${{ github.ref == 'refs/heads/develop' && format('ghcr.io/{0}:unstable', env.GHCR_IMAGE) || '' }}
             ${{ github.event_name == 'pull_request' && format('ghcr.io/{0}:PR.{1}', env.GHCR_IMAGE, env.PR_ID) || '' }}

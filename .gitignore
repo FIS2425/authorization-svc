@@ -14,8 +14,11 @@ migrations
 # Seeders
 seeders
 
-# config
-config
-
 # Mac files
 .DS_Store
+
+# Logs
+logs
+
+# Coverage
+coverage
