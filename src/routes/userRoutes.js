@@ -7,6 +7,8 @@ import {
   deleteUser,
   login,
   logout,
+  enable2FA,
+  verify2FA,
 } from '../controllers/userController.js';
 import { validateToken, validate } from '../middleware/validationMiddleware.js';
 import { userExists, authorizeRequest } from '../middleware/authMiddleware.js';
@@ -15,6 +17,7 @@ import {
   userEditValidator,
   userLoginValidator,
   changePasswordValidator,
+  verify2FAValidator,
 } from '../validators/userValidator.js';
 
 const router = express.Router();
@@ -63,5 +66,9 @@ router.post(
 router.post('/login', validate(userLoginValidator), login);
 
 router.post('/logout', logout);
+
+router.post('/users/enable-2fa', validateToken, enable2FA);
+
+router.post('/users/verify-2fa', validate(verify2FAValidator), verify2FA);
 
 export default router;
