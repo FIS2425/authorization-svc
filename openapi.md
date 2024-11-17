@@ -12,6 +12,8 @@ Authorization microservice for medical consultation application. Handles the aut
 | POST | [/logout](#postlogout) | User Logout |
 | POST | [/users](#postusers) | Create User |
 | POST | [/users/change-password](#postuserschange-password) | Change user password |
+| POST | [/users/enable-2fa](#postusersenable-2fa) | Enable two-factor authentication |
+| POST | [/users/verify-2fa](#postusersverify-2fa) | Verify two-factor authentication |
 | DELETE | [/users/{id}](#deleteusersid) | Deletes user |
 | GET | [/users/{id}](#getusersid) | Retrieve user information |
 | PUT | [/users/{id}](#putusersid) | Update user information |
@@ -251,6 +253,124 @@ Allows authenticated users to change their password.
 ```
 
 - 404 User not found
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 500 Internal server error
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+***
+
+### [POST]/users/enable-2fa
+
+- Summary  
+Enable two-factor authentication
+
+- Description  
+Allows authenticated users to enable two-factor authentication.
+
+#### Responses
+
+- 200 2FA successfully enabled
+
+`application/json`
+
+```ts
+{
+  message?: string
+  qrCodeUrl?: string
+}
+```
+
+- 400 Invalid request
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 401 Unauthorized
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 500 Internal server error
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+***
+
+### [POST]/users/verify-2fa
+
+- Summary  
+Verify two-factor authentication
+
+- Description  
+Allows authenticated users to verify two-factor authentication.
+
+#### RequestBody
+
+- application/json
+
+```ts
+{
+  // The user's unique ID.
+  userId: string
+  // The two-factor authentication token.
+  totpToken: string
+}
+```
+
+#### Responses
+
+- 200 2FA token verified successfully
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 400 Invalid request
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 403 Unauthorized access
 
 `application/json`
 
