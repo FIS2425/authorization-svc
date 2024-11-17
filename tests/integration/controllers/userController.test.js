@@ -120,7 +120,9 @@ describe('User Controller Integration Tests', () => {
         .send({ email: 'twofactor@test.com', password: 'pAssw0rd!' });
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Credentials validated, please verify 2FA token');
+      expect(response.body.message).toBe(
+        'Credentials validated, please verify 2FA token'
+      );
 
       const validTOTP = speakeasy.totp({
         secret: twoFactorUser.totpSecret,
@@ -146,7 +148,9 @@ describe('User Controller Integration Tests', () => {
         .send({ email: 'twofactor@test.com', password: 'pAssw0rd!' });
 
       expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Credentials validated, please verify 2FA token');
+      expect(response.body.message).toBe(
+        'Credentials validated, please verify 2FA token'
+      );
 
       const nonValidTOTP = speakeasy.totp({
         secret: 'invalidSecret',
@@ -154,7 +158,10 @@ describe('User Controller Integration Tests', () => {
       });
       const twoFAresponse = await request
         .post('/users/verify-2fa')
-        .send({ userId: twoFactorUser._id.toString(), totpToken: nonValidTOTP });
+        .send({
+          userId: twoFactorUser._id.toString(),
+          totpToken: nonValidTOTP,
+        });
 
       expect(twoFAresponse.status).toBe(400);
       expect(twoFAresponse.body.message).toBe('Invalid 2FA token');
@@ -522,6 +529,58 @@ describe('User Controller Integration Tests', () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: 'User not found' });
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should change password successfully', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            {
+              method: 'changePassword',
+              onRoles: ['doctor', 'patient', 'himself'],
+            },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .post('/users/change-password')
+        .set('Cookie', [`token=${clinicAdminToken}`])
+        .send({ currentPassword: 'pAssw0rd!', newPassword: 'newP@ssw0rd!' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Password changed successfully');
+    });
+
+    it('should return 400 on failed password validation', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            {
+              method: 'changePassword',
+              onRoles: ['doctor', 'patient', 'himself'],
+            },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .post('/users/change-password')
+        .set('Cookie', [`token=${clinicAdminToken}`])
+        .send({ currentPassword: 'pAssw0rd!', newPassword: 'password' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        message: 'Validation error',
+        errors: {
+          newPassword:
+            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+        },
+      });
     });
   });
 });
