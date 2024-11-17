@@ -24,7 +24,7 @@ export const validateToken = async (req, res, next) => {
         method: req.method,
         url: req.originalUrl,
         userId: req.userId,
-        ip: req.ip,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
       });
       return res.status(401).json({ message: 'User not found' });
     }
@@ -35,7 +35,7 @@ export const validateToken = async (req, res, next) => {
       logger.warn('Token expired', {
         method: req.method,
         url: req.originalUrl,
-        ip: req.ip,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
       });
       await deleteToken(req.userId, token);
       return res.status(401).json({ message: 'Token expired' });

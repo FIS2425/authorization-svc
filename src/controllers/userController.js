@@ -14,7 +14,7 @@ export const createUser = async (req, res) => {
         method: req.method,
         url: req.originalUrl,
         email,
-        ip: req.ip,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
       });
       return res.status(400).json({
         message: 'A user with that email already exists.',
@@ -39,7 +39,7 @@ export const createUser = async (req, res) => {
       url: req.originalUrl,
       email: newUser.email,
       userId: newUser._id.toString(),
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
 
     res.status(201).json(userWithoutPassword);
@@ -48,7 +48,7 @@ export const createUser = async (req, res) => {
       method: req.method,
       url: req.originalUrl,
       error: error.message,
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
     res.status(500).json({
       message: 'Internal server error.',
@@ -69,7 +69,7 @@ export const getUser = async (req, res) => {
       url: req.originalUrl,
       user: userId,
       userId: req.userId,
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
     res.status(200).json(userWithoutPassword);
   } catch (error) {
@@ -79,7 +79,7 @@ export const getUser = async (req, res) => {
       error: error.message,
       user: userId,
       userId: req.userId,
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -100,7 +100,7 @@ export const editUser = async (req, res) => {
         method: req.method,
         url: req.originalUrl,
         email,
-        ip: req.ip,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
       });
       return res.status(400).json({
         message: 'A user with that email already exists.',
@@ -124,7 +124,7 @@ export const editUser = async (req, res) => {
       url: req.originalUrl,
       user: userId,
       userId: req.userId,
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
     res.status(200).json(userWithoutPassword);
   } catch (error) {
@@ -134,7 +134,7 @@ export const editUser = async (req, res) => {
       error: error.message,
       user: userId,
       userId: req.userId,
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -191,7 +191,7 @@ export const deleteUser = async (req, res) => {
       url: req.originalUrl,
       user: userId,
       userId: req.userId,
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
     res.status(204).json({ _id: req.userId });
   }
@@ -202,7 +202,7 @@ export const deleteUser = async (req, res) => {
       error: error.message,
       user: userId,
       userId: req.userId,
-      ip: req.ip,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
     });
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -311,3 +311,4 @@ export const logout = async (req, res) => {
     }
   };
 };
+
