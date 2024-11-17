@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
       enum: ['admin', 'clinicadmin', 'doctor', 'patient'],
       default: 'patient',
     },
+    totpSecret: {
+      type: String,
+      default: null, // Initially, the user does not have 2FA enabled
+    },
     doctorid: {
       type: String,
     },
