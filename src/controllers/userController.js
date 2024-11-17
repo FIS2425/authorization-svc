@@ -401,7 +401,7 @@ export const verify2FA = async (req, res) => {
     }
 
     if (!user.totpSecret) {
-      return res.status(400).json({ message: '2FA not enabled for this user' });
+      return res.status(403).json({ message: '2FA not enabled for this user' });
     }
 
     const isTokenValid = speakeasy.totp.verify({
@@ -412,7 +412,7 @@ export const verify2FA = async (req, res) => {
     });
 
     if (!isTokenValid) {
-      return res.status(403).json({ message: 'Invalid 2FA token' });
+      return res.status(400).json({ message: 'Invalid 2FA token' });
     }
 
     await redisClient.del(sessionKey);
