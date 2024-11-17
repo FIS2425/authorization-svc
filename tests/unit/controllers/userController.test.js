@@ -257,7 +257,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });
@@ -424,7 +424,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
           roles: 'At least one role is required.',
         },
       });
@@ -579,6 +579,23 @@ describe('User Controller', () => {
     });
 
     it('should return 500 if there is an error deleting user', async () => {
+      const user = {
+        _id: 'userId',
+        email: 'email@email.com',
+        password: 'password',
+        roles: ['doctor'],
+      };
+
+      vi.spyOn(User, 'findById').mockResolvedValue(user);
+      vi.spyOn(User, 'findOne').mockResolvedValue(user);
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'delete', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
       const errorMessage = 'Database error';
       vi.spyOn(User, 'findByIdAndDelete').mockRejectedValue(
         new Error(errorMessage)
