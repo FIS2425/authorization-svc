@@ -1,4 +1,5 @@
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
+import speakeasy from 'speakeasy';
 import { v4 as uuidv4 } from 'uuid';
 import * as db from '../../setup/database';
 import { request } from '../../setup/setup';
@@ -14,6 +15,22 @@ const sampleUser = new User({
   roles: ['patient'],
 });
 
+const noTwoFactorUser = new User({
+  _id: uuidv4(),
+  email: 'notwofactor@test.com',
+  password: 'pAssw0rd!',
+  roles: ['patient'],
+  totpSecret: null,
+});
+
+const twoFactorUser = new User({
+  _id: uuidv4(),
+  email: 'twofactor@test.com',
+  password: 'pAssw0rd!',
+  roles: ['patient'],
+  totpSecret: 'ONSWG4TFOQFA====',
+});
+
 const clinicAdmin = new User({
   _id: uuidv4(),
   email: 'clinicAdmin@test.com',
@@ -25,6 +42,12 @@ const sampleUserToken = jwt.sign(
   { userId: sampleUser._id, roles: sampleUser.roles },
   process.env.VITE_JWT_SECRET
 );
+
+const noTwoFactorUserToken = jwt.sign(
+  { userId: noTwoFactorUser._id, roles: noTwoFactorUser.roles },
+  process.env.VITE_JWT_SECRET
+);
+
 const clinicAdminToken = jwt.sign(
   { userId: clinicAdmin._id, roles: clinicAdmin.roles },
   process.env.VITE_JWT_SECRET
@@ -32,9 +55,12 @@ const clinicAdminToken = jwt.sign(
 
 beforeAll(async () => {
   await db.clearDatabase();
+  await noTwoFactorUser.save();
+  await twoFactorUser.save();
   await sampleUser.save();
   await clinicAdmin.save();
 
+  redisClient.set(noTwoFactorUserToken, noTwoFactorUser._id.toString());
   redisClient.set(sampleUserToken, sampleUser._id.toString());
   redisClient.set(clinicAdminToken, clinicAdmin._id.toString());
 });
@@ -76,6 +102,69 @@ describe('User Controller Integration Tests', () => {
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('User not found');
+    });
+
+    it('should 200 with 2FA enabled', async () => {
+      const response = await request
+        .post('/users/enable-2fa')
+        .set('Cookie', [`token=${noTwoFactorUserToken}`]);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('2FA enabled successfully');
+      expect(response.body).toHaveProperty('qrCodeUrl');
+    });
+
+    it('should login 200 with valid 2FA token', async () => {
+      const response = await request
+        .post('/login')
+        .send({ email: 'twofactor@test.com', password: 'pAssw0rd!' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe(
+        'Credentials validated, please verify 2FA token'
+      );
+
+      const validTOTP = speakeasy.totp({
+        secret: twoFactorUser.totpSecret,
+        encoding: 'base32',
+      });
+      const twoFAresponse = await request
+        .post('/users/verify-2fa')
+        .send({ userId: twoFactorUser._id.toString(), totpToken: validTOTP });
+
+      expect(twoFAresponse.status).toBe(200);
+      expect(twoFAresponse.body.message).toBe('Login successful');
+      expect(twoFAresponse.headers['set-cookie']).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('token='),
+          expect.stringContaining('refreshToken='),
+        ])
+      );
+    });
+
+    it('should not login 400 with non-valid 2FA token', async () => {
+      const response = await request
+        .post('/login')
+        .send({ email: 'twofactor@test.com', password: 'pAssw0rd!' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe(
+        'Credentials validated, please verify 2FA token'
+      );
+
+      const nonValidTOTP = speakeasy.totp({
+        secret: 'invalidSecret',
+        encoding: 'base32',
+      });
+      const twoFAresponse = await request
+        .post('/users/verify-2fa')
+        .send({
+          userId: twoFactorUser._id.toString(),
+          totpToken: nonValidTOTP,
+        });
+
+      expect(twoFAresponse.status).toBe(400);
+      expect(twoFAresponse.body.message).toBe('Invalid 2FA token');
     });
   });
 
@@ -412,6 +501,34 @@ describe('User Controller Integration Tests', () => {
           roles: 'At least one role is required.',
         },
       });
+    });
+  });
+
+  describe('deleteUser', () => {
+    it('should delete a user successfully', async () => {
+      vi.spyOn(Role, 'find').mockResolvedValue([
+        {
+          role: 'clinicadmin',
+          permissions: [
+            { method: 'delete', onRoles: ['doctor', 'patient', 'himself'] },
+          ],
+        },
+      ]);
+
+      const response = await request
+        .delete(`/users/${sampleUser._id.toString()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`]);
+
+      expect(response.status).toBe(204);
+    });
+
+    it('should return 404 if user is not found', async () => {
+      const response = await request
+        .delete(`/users/${uuidv4()}`)
+        .set('Cookie', [`token=${clinicAdminToken}`]);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: 'User not found' });
     });
   });
 

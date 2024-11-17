@@ -18,13 +18,9 @@ export const userValidator = z.object({
   roles: z
     .string({ required_error: 'Roles are required' })
     .array(z.string())
-    .refine(
-      (roles) =>
-        roles.length > 0,
-      {
-        message: 'At least one role is required.',
-      }
-    )
+    .refine((roles) => roles.length > 0, {
+      message: 'At least one role is required.',
+    })
     .refine(
       (roles) =>
         roles.every((role) =>
@@ -40,10 +36,7 @@ export const userValidator = z.object({
 });
 
 export const userEditValidator = z.object({
-  email: z
-    .string()
-    .email('Invalid email address')
-    .optional(),
+  email: z.string().email('Invalid email address').optional(),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters long')
@@ -59,13 +52,9 @@ export const userEditValidator = z.object({
   roles: z
     .string()
     .array(z.string())
-    .refine(
-      (roles) =>
-        roles.length > 0,
-      {
-        message: 'At least one role is required.',
-      }
-    )
+    .refine((roles) => roles.length > 0, {
+      message: 'At least one role is required.',
+    })
     .refine(
       (roles) =>
         roles.every((role) =>
@@ -100,4 +89,9 @@ export const changePasswordValidator = z.object({
     .refine((password) => {
       return !/\s/.test(password);
     }, 'Password must not contain spaces'),
+});
+
+export const verify2FAValidator = z.object({
+  userId: z.string({ required_error: 'User ID is required' }),
+  totpToken: z.string({ required_error: 'TOTP token is required' }),
 });
