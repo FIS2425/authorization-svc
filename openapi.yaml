@@ -5,7 +5,7 @@ info:
   description: Authorization microservice for medical consultation application. Handles the authorization of users for the entire application.
 
 servers:
-  - url: http://localhost:3001/auth/api/v1
+  - url: http://localhost:3001/api/v1
 
 paths:
   /users:
