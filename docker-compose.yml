@@ -43,8 +43,6 @@ services:
       - authorization
     ports:
       - '3001:3001'
-    volumes:
-      - .:/authorization-svc:z
 
 volumes:
   mongo-auth:
