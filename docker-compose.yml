@@ -33,8 +33,16 @@ services:
       dockerfile: Dockerfile
     container_name: authorization-svc
     environment:
-      - MONGODB_URL=${MONGOURL}
-      - API_PREFIX=${API_PREFIX}
+      - MONGOADMIN=${MONGOADMIN}
+      - MONGOPASS=${MONGOPASS}
+      - MONGOURL=${MONGOURL}
+      - DRAGONFLY_HOST=${DRAGONFLY_HOST}
+      - DRAGONFLY_PORT=6379
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=3600
+      - JWT_REFRESH_EXPIRATION=604800
+      - KAFKA_HOST=${KAFKA_HOST}
+      - API_PREFIX=/api/v1
       - NODE_ENV=production
     depends_on:
       - mongodb
@@ -43,8 +51,6 @@ services:
       - authorization
     ports:
       - '3001:3001'
-    volumes:
-      - .:/authorization-svc:z
 
 volumes:
   mongo-auth:
