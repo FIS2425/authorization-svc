@@ -6,6 +6,9 @@ info:
 
 servers:
   - url: http://localhost:3001/api/v1
+    description: Development server
+  - url: /api/v1
+    description: Production server
 
 paths:
   /users:
