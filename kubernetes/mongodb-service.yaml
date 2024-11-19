@@ -8,7 +8,7 @@ metadata:
     io.kompose.service: mongodb
   name: mongodb
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - protocol: TCP
       name: "27017"

@@ -62,7 +62,7 @@ spec:
                   key: MONGOURL
             - name: NODE_ENV
               value: production
-          image: ghcr.io/fis2425/authorization
+          image: ghcr.io/fis2425/authorization:PR.75
           name: authorization-svc
           ports:
             - containerPort: 3001
