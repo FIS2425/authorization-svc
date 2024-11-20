@@ -25,6 +25,7 @@ export const validateToken = async (req, res, next) => {
         url: req.originalUrl,
         userId: req.userId,
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       return res.status(401).json({ message: 'User not found' });
     }
@@ -36,6 +37,7 @@ export const validateToken = async (req, res, next) => {
         method: req.method,
         url: req.originalUrl,
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       await deleteToken(req.userId, token);
       return res.status(401).json({ message: 'Token expired' });
@@ -48,6 +50,8 @@ export const validateToken = async (req, res, next) => {
         method: req.method,
         url: req.originalUrl,
         error: error,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       return res.status(401).json({ message: 'Token expired' });
     } else {
@@ -55,6 +59,8 @@ export const validateToken = async (req, res, next) => {
         method: req.method,
         url: req.originalUrl,
         error: error,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       return res.status(401).json({ message: 'Invalid token' });
     }
@@ -70,6 +76,8 @@ export const validate = (validator) => async (req, res, next) => {
       method: req.method,
       url: req.originalUrl,
       error: error.errors,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
 
     const formattedErrors = error.errors.reduce((acc, err) => {
