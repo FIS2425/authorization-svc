@@ -667,13 +667,13 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /validate:
+  /token/validate:
     get:
       summary: Validates the user's token.
       description: Checks the validity of the token provided in the user's cookies.
       tags:
         - Authentication
-      operationId: validateToken
+      operationId: validateAuthToken
       responses:
         '200':
           description: Token is valid.

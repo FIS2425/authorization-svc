@@ -1,6 +1,6 @@
 import { describe, afterEach, it, vi, expect } from 'vitest';
 import jwt from 'jsonwebtoken';
-import { validateToken } from '../../../src/middleware/validationMiddleware.js';
+import { validateAuthToken } from '../../../src/middleware/validationMiddleware.js';
 import User from '../../../src/schemas/User.js';
 import { redisClient } from '../../../src/config/redis.js';
 
@@ -29,7 +29,7 @@ describe('Validation Middleware', () => {
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      await validateToken(req, res, next);
+      await validateAuthToken(req, res, next);
 
       expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET || process.env.VITE_JWT_SECRET);
       expect(User.findById).toHaveBeenCalledWith(mockDecoded.userId);
@@ -42,7 +42,7 @@ describe('Validation Middleware', () => {
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
       const next = vi.fn();
 
-      await validateToken(req, res, next);
+      await validateAuthToken(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ message: 'No token provided' });
@@ -60,7 +60,7 @@ describe('Validation Middleware', () => {
         throw new jwt.TokenExpiredError('jwt expired', new Date());
       });
 
-      await validateToken(req, res, next);
+      await validateAuthToken(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ message: 'Token expired' });
@@ -87,7 +87,7 @@ describe('Validation Middleware', () => {
       vi.spyOn(User, 'findById').mockResolvedValue(mockUser);
       vi.spyOn(redisClient, 'exists').mockResolvedValue(false);
 
-      await validateToken(req, res, next);
+      await validateAuthToken(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ message: 'Token expired' });
@@ -106,7 +106,7 @@ describe('Validation Middleware', () => {
       vi.spyOn(User, 'findById').mockResolvedValue(null);
       vi.spyOn(redisClient, 'exists').mockResolvedValue(false);
 
-      await validateToken(req, res, next);
+      await validateAuthToken(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ message: 'User not found' });
@@ -124,7 +124,7 @@ describe('Validation Middleware', () => {
         throw new jwt.JsonWebTokenError('invalid signature');
       });
 
-      await validateToken(req, res, next);
+      await validateAuthToken(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ message: 'Invalid token' });

@@ -43,13 +43,13 @@ describe('Validation Middleware', () => {
   });
 
   it('should validate the token successfully', async () => {
-    const res = await request.get('/validate').set('Cookie', `token=${token}`);
+    const res = await request.get('/token/validate').set('Cookie', `token=${token}`);
 
     expect(res.status).toBe(200);
   });
 
   it('should return 401 with no token provided', async () => {
-    const res = await request.get('/validate').set('Cookie', '');
+    const res = await request.get('/token/validate').set('Cookie', '');
 
     expect(res.status).toBe(401);
     expect(res.body.message).toBe('No token provided');
@@ -63,7 +63,7 @@ describe('Validation Middleware', () => {
     );
 
     const res = await request
-      .get('/validate')
+      .get('/token/validate')
       .set('Cookie', `token=${expiredToken}`);
 
     expect(res.status).toBe(401);
@@ -81,7 +81,7 @@ describe('Validation Middleware', () => {
     );
 
     const res = await request
-      .get('/validate')
+      .get('/token/validate')
       .set('Cookie', `token=${expiredToken}`);
 
     expect(res.status).toBe(401);
@@ -96,7 +96,7 @@ describe('Validation Middleware', () => {
     );
 
     const res = await request
-      .get('/validate')
+      .get('/token/validate')
       .set('Cookie', `token=${invalidToken}`);
 
     expect(res.status).toBe(401);
@@ -107,7 +107,7 @@ describe('Validation Middleware', () => {
     const invalidToken = 'invalid.token.value';
 
     const res = await request
-      .get('/validate')
+      .get('/token/validate')
       .set('Cookie', `token=${invalidToken}`);
 
     expect(res.status).toBe(401);

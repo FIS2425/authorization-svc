@@ -26,7 +26,7 @@ describe('Validation Controller', () => {
     vi.spyOn(redisClient, 'exists').mockResolvedValue(true);
 
     const res = await request
-      .get('/validate')
+      .get('/token/validate')
       .set('Cookie', `token=${mockToken}`);
 
     expect(res.status).toBe(200);
