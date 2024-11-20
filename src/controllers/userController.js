@@ -17,6 +17,7 @@ export const createUser = async (req, res) => {
         url: req.originalUrl,
         email,
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       return res.status(400).json({
         message: 'A user with that email already exists.',
@@ -42,6 +43,7 @@ export const createUser = async (req, res) => {
       email: newUser.email,
       userId: newUser._id.toString(),
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
 
     res.status(201).json(userWithoutPassword);
@@ -51,6 +53,7 @@ export const createUser = async (req, res) => {
       url: req.originalUrl,
       error: error.message,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(500).json({
       message: 'Internal server error.',
@@ -72,6 +75,7 @@ export const getUser = async (req, res) => {
       user: userId,
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(200).json(userWithoutPassword);
   } catch (error) {
@@ -82,6 +86,7 @@ export const getUser = async (req, res) => {
       user: userId,
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -103,6 +108,7 @@ export const editUser = async (req, res) => {
         url: req.originalUrl,
         email,
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       return res.status(400).json({
         message: 'A user with that email already exists.',
@@ -127,6 +133,7 @@ export const editUser = async (req, res) => {
       user: userId,
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(200).json(userWithoutPassword);
   } catch (error) {
@@ -137,6 +144,7 @@ export const editUser = async (req, res) => {
       user: userId,
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -154,6 +162,8 @@ export const changePassword = async (req, res) => {
         method: req.method,
         url: req.originalUrl,
         userId: userId,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -167,6 +177,8 @@ export const changePassword = async (req, res) => {
       method: req.method,
       url: req.originalUrl,
       userId: userId,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
 
     res.status(200).json({ message: 'Password changed successfully' });
@@ -175,6 +187,8 @@ export const changePassword = async (req, res) => {
       method: req.method,
       url: req.originalUrl,
       error: error,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(500).json({ message: 'Error when authenticating' });
   }
@@ -194,6 +208,7 @@ export const deleteUser = async (req, res) => {
       user: userId,
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(204).send();
   } catch (error) {
@@ -204,6 +219,7 @@ export const deleteUser = async (req, res) => {
       user: userId,
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -219,7 +235,7 @@ export const login = async (req, res) => {
     } else if (await user.comparePassword(password)) {
       if (user.totpSecret) {
         const sessionKey = `2fa_pending:${user._id.toString()}:${
-          (req.headers && req.headers['x-forwarded-for']) || req.ip
+          req.headers && req.headers['x-forwarded-for'] || req.ip
         }`;
 
         redisClient.set(
@@ -233,6 +249,8 @@ export const login = async (req, res) => {
           method: req.method,
           url: req.originalUrl,
           userId: user._id.toString(),
+          ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+          requestId: req.headers && req.headers['x-request-id'],
         });
 
         // We return a 200 status code to indicate that the user must now verify the 2FA token
@@ -288,6 +306,8 @@ export const login = async (req, res) => {
         method: req.method,
         url: req.originalUrl,
         userId: user._id.toString(),
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       res.status(200).json({ message: 'Login successful' });
     } else {
@@ -295,6 +315,8 @@ export const login = async (req, res) => {
         method: req.method,
         url: req.originalUrl,
         userId: user._id.toString(),
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -303,6 +325,8 @@ export const login = async (req, res) => {
       method: req.method,
       url: req.originalUrl,
       error: error,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(500).json({ message: 'Error when authenticating' });
   }
@@ -327,12 +351,16 @@ export const logout = async (req, res) => {
         method: req.method,
         url: req.originalUrl,
         userId: userId,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       redisClient.del(authToken);
       logger.info('Token revoked', {
         method: req.method,
         url: req.originalUrl,
         userId: userId,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
 
       res.status(200).json({ message: 'Logout successful' });
@@ -343,6 +371,8 @@ export const logout = async (req, res) => {
         url: req.originalUrl,
         userId: userId,
         error: error,
+        ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'],
       });
       res.status(200).json({ message: 'Logout successful' });
     }
@@ -365,6 +395,8 @@ export const enable2FA = async (req, res) => {
           url: req.originalUrl,
           error: err,
           userId: req.userId,
+          ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+          requestId: req.headers && req.headers['x-request-id'],
         });
         return res.status(500).json({ message: 'Internal server error' });
       }
@@ -379,6 +411,8 @@ export const enable2FA = async (req, res) => {
       url: req.originalUrl,
       error: error.message,
       userId: req.userId,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -389,7 +423,7 @@ export const verify2FA = async (req, res) => {
 
   try {
     const sessionKey = `2fa_pending:${userId}:${
-      (req.headers && req.headers['x-forwarded-for']) || req.ip
+      req.headers && req.headers['x-forwarded-for'] || req.ip
     }`;
 
     const sessionExists = await redisClient.exists(sessionKey);
@@ -466,6 +500,8 @@ export const verify2FA = async (req, res) => {
       method: req.method,
       url: req.originalUrl,
       userId: user._id.toString(),
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
 
     return res.status(200).json({ message: 'Login successful' });
@@ -475,9 +511,10 @@ export const verify2FA = async (req, res) => {
       url: req.originalUrl,
       userId,
       error: error.message,
+      ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'],
     });
 
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
-
