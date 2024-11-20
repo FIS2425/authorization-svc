@@ -234,8 +234,7 @@ export const login = async (req, res) => {
       res.status(401).json({ message: 'User not found' });
     } else if (await user.comparePassword(password)) {
       if (user.totpSecret) {
-        const sessionKey = `2fa_pending:${user._id.toString()}:${
-          req.headers && req.headers['x-forwarded-for'] || req.ip
+        const sessionKey = `2fa_pending:${user._id.toString()}:${(req.headers && req.headers['x-forwarded-for']) || req.ip
         }`;
 
         redisClient.set(
@@ -422,9 +421,7 @@ export const verify2FA = async (req, res) => {
   const { userId, totpToken } = req.body;
 
   try {
-    const sessionKey = `2fa_pending:${userId}:${
-      req.headers && req.headers['x-forwarded-for'] || req.ip
-    }`;
+    const sessionKey = `2fa_pending:${userId}:${(req.headers && req.headers['x-forwarded-for']) || req.ip}`;
 
     const sessionExists = await redisClient.exists(sessionKey);
     if (!sessionExists) {
@@ -455,7 +452,9 @@ export const verify2FA = async (req, res) => {
 
     await redisClient.del(sessionKey);
 
-    // If the totpToken is valid, we generate the jwt tokens
+    const token_expiration = parseInt(process.env.JWT_EXPIRATION) || 3600;
+    const refreshToken_expiration = parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600;
+
     const authToken = await jwt.sign(
       {
         userId: user._id.toString(),
@@ -463,7 +462,7 @@ export const verify2FA = async (req, res) => {
       },
       process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
       {
-        expiresIn: parseInt(process.env.JWT_EXPIRATION) || 3600,
+        expiresIn: token_expiration,
       }
     );
 
@@ -473,7 +472,7 @@ export const verify2FA = async (req, res) => {
       },
       process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
       {
-        expiresIn: parseInt(process.env.JWT_REFRESH_EXPIRATION) || '7d',
+        expiresIn: refreshToken_expiration,
       }
     );
 
@@ -492,6 +491,9 @@ export const verify2FA = async (req, res) => {
 
     redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
     redisClient.sadd(`user_tokens:${user._id.toString()}`, refreshToken);
+
+    res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000 });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000 });
 
     res.cookie('token', authToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
