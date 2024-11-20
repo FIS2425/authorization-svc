@@ -1,6 +1,6 @@
 import logger from '../config/logger.js';
 import { redisClient } from '../config/redis.js';
-import jwt from 'jsonwebtoken';
+import { generateTokens } from '../utils/generateTokens.js';
 import User from '../schemas/User.js';
 
 export const validate = async (req, res) => {
@@ -32,48 +32,7 @@ export const refresh = async (req, res) => {
     redisClient.smismember(`user_tokens:${user._id.toString()}`, oldRefreshToken) &&
             redisClient.srem(`user_tokens:${user._id.toString()}`, oldRefreshToken);
 
-    const token_expiration = parseInt(process.env.JWT_EXPIRATION) || 3600;
-    const refreshToken_expiration = parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600;
-
-    const authToken = await jwt.sign(
-      {
-        userId: user._id.toString(),
-        roles: user.roles,
-      },
-      process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
-      {
-        expiresIn: token_expiration,
-      }
-    );
-
-    const refreshToken = await jwt.sign(
-      {
-        userId: user._id.toString(),
-      },
-      process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
-      {
-        expiresIn: refreshToken_expiration,
-      }
-    );
-
-    redisClient.set(
-      authToken,
-      user._id.toString(),
-      'EX',
-      parseInt(process.env.JWT_EXPIRATION) || 3600
-    );
-    redisClient.set(
-      refreshToken,
-      user._id.toString(),
-      'EX',
-      parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600
-    );
-
-    redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
-    redisClient.sadd(`user_tokens:${user._id.toString()}`, refreshToken);
-
-    res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000 });
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000 });
+    await generateTokens(user, res);
 
     logger.info(`Tokens refreshed: "${user.email}"`, {
       request_id: req.headers && req.headers['x-request-id'] || '',
@@ -82,7 +41,7 @@ export const refresh = async (req, res) => {
       userId: user._id.toString(),
     });
 
-    return res.status(200).json({ message: 'Tokens refhresed' });
+    return res.status(200).json({ message: 'Tokens refreshed' });
   } catch (error) {
     logger.error('Error refreshing tokens', {
       request_id: req.headers && req.headers['x-request-id'] || '',
