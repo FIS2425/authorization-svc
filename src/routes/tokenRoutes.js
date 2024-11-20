@@ -1,9 +1,10 @@
 import express from 'express';
-import { validate } from '../controllers/validationController.js';
-import { validateAuthToken } from '../middleware/validationMiddleware.js';
+import { validate, refresh } from '../controllers/tokenController.js';
+import { validateAuthToken, validateRefreshToken } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
 
 router.get('/validate', validateAuthToken, validate);
+router.get('/refresh', validateRefreshToken, refresh);
 
 export default router;
