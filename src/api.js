@@ -3,7 +3,7 @@ import cors from 'cors';
 import swaggerUI from 'swagger-ui-express';
 import YAML from 'yamljs';
 import userRoutes from './routes/userRoutes.js';
-import validationRoutes from './routes/validationRoutes.js';
+import tokenRoutes from './routes/tokenRoutes.js';
 import cookieParser from 'cookie-parser';
 
 const swaggerDocument = YAML.load('./openapi.yaml');
@@ -17,10 +17,10 @@ export default function () {
   app.use(cookieParser());
 
   // Register routes
-  app.use(`${process.env.API_PREFIX || '/'}`, userRoutes);
-  app.use(`${process.env.API_PREFIX || '/'}`, validationRoutes);
+  app.use(`${process.env.API_PREFIX || ''}/`, userRoutes);
+  app.use(`${process.env.API_PREFIX || ''}/token`, tokenRoutes);
 
-  app.get(`${process.env.API_PREFIX || '/'}`, (req, res) => {
+  app.get(`${process.env.API_PREFIX || ''}/`, (req, res) => {
     res.send('API funcionando correctamente');
   });
 

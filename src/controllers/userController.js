@@ -4,6 +4,7 @@ import qrcode from 'qrcode';
 import User from '../schemas/User.js';
 import logger from '../config/logger.js';
 import { redisClient, deleteTokensByUserId } from '../config/redis.js';
+import { generateTokens } from '../utils/generateTokens.js';
 
 export const createUser = async (req, res) => {
   try {
@@ -234,8 +235,7 @@ export const login = async (req, res) => {
       res.status(401).json({ message: 'User not found' });
     } else if (await user.comparePassword(password)) {
       if (user.totpSecret) {
-        const sessionKey = `2fa_pending:${user._id.toString()}:${
-          req.headers && req.headers['x-forwarded-for'] || req.ip
+        const sessionKey = `2fa_pending:${user._id.toString()}:${(req.headers && req.headers['x-forwarded-for']) || req.ip
         }`;
 
         redisClient.set(
@@ -260,47 +260,7 @@ export const login = async (req, res) => {
         });
       }
 
-      // If the user does not have 2FA enabled, we generate the tokens and send them to the user
-      const authToken = await jwt.sign(
-        {
-          userId: user._id.toString(),
-          roles: user.roles,
-        },
-        process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
-        {
-          expiresIn: parseInt(process.env.JWT_EXPIRATION) || 3600,
-        }
-      );
-      const refreshToken = await jwt.sign(
-        {
-          userId: user._id.toString(),
-        },
-        process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
-        {
-          expiresIn: parseInt(process.env.JWT_REFRESH_EXPIRATION) || '7d',
-        }
-      );
-
-      // We save the token to the cache, so that in cases of emergy we can revoke it
-      redisClient.set(
-        authToken,
-        user._id.toString(),
-        'EX',
-        parseInt(process.env.JWT_EXPIRATION) || 3600
-      );
-      redisClient.set(
-        refreshToken,
-        user._id.toString(),
-        'EX',
-        parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600
-      );
-
-      // We create an index to be able to search by userId
-      redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
-      redisClient.sadd(`user_tokens:${user._id.toString()}`, refreshToken);
-
-      res.cookie('token', authToken, { httpOnly: true });
-      res.cookie('refreshToken', refreshToken, { httpOnly: true });
+      await generateTokens(user, res);
 
       logger.info(`User logged in: "${user.email}"`, {
         method: req.method,
@@ -422,9 +382,7 @@ export const verify2FA = async (req, res) => {
   const { userId, totpToken } = req.body;
 
   try {
-    const sessionKey = `2fa_pending:${userId}:${
-      req.headers && req.headers['x-forwarded-for'] || req.ip
-    }`;
+    const sessionKey = `2fa_pending:${userId}:${(req.headers && req.headers['x-forwarded-for']) || req.ip}`;
 
     const sessionExists = await redisClient.exists(sessionKey);
     if (!sessionExists) {
@@ -455,46 +413,7 @@ export const verify2FA = async (req, res) => {
 
     await redisClient.del(sessionKey);
 
-    // If the totpToken is valid, we generate the jwt tokens
-    const authToken = await jwt.sign(
-      {
-        userId: user._id.toString(),
-        roles: user.roles,
-      },
-      process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
-      {
-        expiresIn: parseInt(process.env.JWT_EXPIRATION) || 3600,
-      }
-    );
-
-    const refreshToken = await jwt.sign(
-      {
-        userId: user._id.toString(),
-      },
-      process.env.JWT_SECRET || process.env.VITE_JWT_SECRET,
-      {
-        expiresIn: parseInt(process.env.JWT_REFRESH_EXPIRATION) || '7d',
-      }
-    );
-
-    redisClient.set(
-      authToken,
-      user._id.toString(),
-      'EX',
-      parseInt(process.env.JWT_EXPIRATION) || 3600
-    );
-    redisClient.set(
-      refreshToken,
-      user._id.toString(),
-      'EX',
-      parseInt(process.env.JWT_REFRESH_EXPIRATION) || 3600
-    );
-
-    redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
-    redisClient.sadd(`user_tokens:${user._id.toString()}`, refreshToken);
-
-    res.cookie('token', authToken, { httpOnly: true });
-    res.cookie('refreshToken', refreshToken, { httpOnly: true });
+    await generateTokens(user, res);
 
     logger.info(`User logged in with 2FA: "${user.email}"`, {
       method: req.method,
