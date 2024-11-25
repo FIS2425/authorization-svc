@@ -10,6 +10,8 @@ Authorization microservice for medical consultation application. Handles the aut
 | --- | --- | --- |
 | POST | [/login](#postlogin) | User Login |
 | POST | [/logout](#postlogout) | User Logout |
+| GET | [/token/refresh](#gettokenrefresh) | Refreshes the user's token. |
+| GET | [/token/validate](#gettokenvalidate) | Validates the user's token. |
 | POST | [/users](#postusers) | Create User |
 | POST | [/users/change-password](#postuserschange-password) | Change user password |
 | POST | [/users/enable-2fa](#postusersenable-2fa) | Enable two-factor authentication |
@@ -17,7 +19,6 @@ Authorization microservice for medical consultation application. Handles the aut
 | DELETE | [/users/{id}](#deleteusersid) | Deletes user |
 | GET | [/users/{id}](#getusersid) | Retrieve user information |
 | PUT | [/users/{id}](#putusersid) | Update user information |
-| GET | [/validate](#getvalidate) | Validates the user's token. |
 
 ## Reference Table
 
@@ -109,6 +110,70 @@ Logs out a user by clearing authentication tokens.
 ```
 
 - 500 undefined
+
+***
+
+### [GET]/token/refresh
+
+- Summary  
+Refreshes the user's token.
+
+- Description  
+Refreshes the user's auth and refresh tokens and sets new values in cookies.
+
+#### Responses
+
+- 200 Tokens refreshed.
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 401 Unauthorized - Token is missing, expired, or invalid.
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+***
+
+### [GET]/token/validate
+
+- Summary  
+Validates the user's token.
+
+- Description  
+Checks the validity of the token provided in the user's cookies.
+
+#### Responses
+
+- 200 Token is valid.
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
+
+- 401 Unauthorized - Token is missing, expired, or invalid.
+
+`application/json`
+
+```ts
+{
+  message?: string
+}
+```
 
 ***
 
@@ -599,38 +664,6 @@ Update user details by user ID. Requires the user to be the owner or have specif
 ```
 
 - 500 Internal server error
-
-`application/json`
-
-```ts
-{
-  message?: string
-}
-```
-
-***
-
-### [GET]/validate
-
-- Summary  
-Validates the user's token.
-
-- Description  
-Checks the validity of the token provided in the user's cookies.
-
-#### Responses
-
-- 200 Token is valid.
-
-`application/json`
-
-```ts
-{
-  message?: string
-}
-```
-
-- 401 Unauthorized - Token is missing, expired, or invalid.
 
 `application/json`
 

@@ -10,6 +10,7 @@ export const userExists = async (req, res, next) => {
       url: req.originalUrl,
       userId: req.userId,
       ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+      requestId: req.headers && req.headers['x-request-id'] || null,
     });
     return res.status(404).json({ message: 'User not found' });
   }
@@ -36,6 +37,7 @@ export const authorizeRequest = (method) => {
           url: req.originalUrl,
           userId: req.userId,
           ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+          requestId: req.headers && req.headers['x-request-id'] || null,
         });
         return res.status(400).json({ message: 'Invalid method' });
       }
@@ -46,6 +48,7 @@ export const authorizeRequest = (method) => {
           url: req.originalUrl,
           userId: req.userId,
           ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+          requestId: req.headers && req.headers['x-request-id'] || null,
         });
         return res.status(403).json({ message: 'Forbidden' });
       }
@@ -109,6 +112,7 @@ export const authorizeRequest = (method) => {
           url: req.originalUrl,
           userId: req.userId,
           ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+          requestId: req.headers && req.headers['x-request-id'] || null,
         });
         return res.status(403).json({ message: 'Forbidden' });
       }
@@ -120,6 +124,7 @@ export const authorizeRequest = (method) => {
         url: req.originalUrl,
         userId: req.userId,
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
+        requestId: req.headers && req.headers['x-request-id'] || null,
         error: error.message,
       });
       res.status(500).json({ message: 'Internal server error' });
