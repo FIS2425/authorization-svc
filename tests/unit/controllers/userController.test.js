@@ -64,7 +64,7 @@ describe('User Controller', () => {
       expect(response.headers).not.toHaveProperty('set-cookie');
     });
 
-    it('should return 401 with invalid credentials', async () => {
+    it('should return 400 with invalid credentials', async () => {
       const user = {
         _id: 'userId',
         email: 'testuser@test.com',
@@ -78,19 +78,19 @@ describe('User Controller', () => {
         .post('/login')
         .send({ email: 'testuser@test.com', password: 'wrongpassword' });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
       expect(response.body.message).toBe('Invalid credentials');
     });
 
-    it('should return 401 if user is not found', async () => {
+    it('should return 400 if user is not found', async () => {
       vi.spyOn(User, 'findOne').mockResolvedValue(null);
 
       const response = await request
         .post('/login')
         .send({ email: 'nonexistentuser@test.com', password: 'password' });
 
-      expect(response.status).toBe(401);
-      expect(response.body.message).toBe('User not found');
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid credentials');
     });
   });
 
@@ -281,7 +281,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });
@@ -448,7 +448,7 @@ describe('User Controller', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
           roles: 'At least one role is required.',
         },
       });
