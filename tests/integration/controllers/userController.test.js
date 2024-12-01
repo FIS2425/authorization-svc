@@ -86,22 +86,22 @@ describe('User Controller Integration Tests', () => {
       );
     });
 
-    it('should return 401 with invalid credentials', async () => {
+    it('should return 400 with invalid credentials', async () => {
       const response = await request
         .post('/login')
         .send({ email: 'testuser@test.com', password: 'wrongpAssw0rd!' });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
       expect(response.body.message).toBe('Invalid credentials');
     });
 
-    it('should return 401 if user is not found', async () => {
+    it('should return 400 if user is not found', async () => {
       const response = await request
         .post('/login')
         .send({ email: 'nonexistentuser@test.com', password: 'pAssw0rd!' });
 
-      expect(response.status).toBe(401);
-      expect(response.body.message).toBe('User not found');
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid credentials');
     });
 
     it('should 200 with 2FA enabled', async () => {
@@ -330,7 +330,7 @@ describe('User Controller Integration Tests', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });
@@ -497,7 +497,7 @@ describe('User Controller Integration Tests', () => {
         errors: {
           email: 'Invalid email address',
           password:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
           roles: 'At least one role is required.',
         },
       });
@@ -578,7 +578,7 @@ describe('User Controller Integration Tests', () => {
         message: 'Validation error',
         errors: {
           newPassword:
-            'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
         },
       });
     });

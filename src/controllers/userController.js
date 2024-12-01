@@ -232,7 +232,7 @@ export const login = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(401).json({ message: 'User not found' });
+      res.status(400).json({ message: 'Invalid credentials' });
     } else if (await user.comparePassword(password)) {
       if (user.totpSecret) {
         const sessionKey = `2fa_pending:${user._id.toString()}:${(req.headers && req.headers['x-forwarded-for']) || req.ip
@@ -278,7 +278,7 @@ export const login = async (req, res) => {
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
         requestId: req.headers && req.headers['x-request-id'] || null,
       });
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(400).json({ message: 'Invalid credentials' });
     }
   } catch (error) {
     logger.error('Error when authenticating', {
