@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Debug Dev",
+            "program": "${workspaceFolder}/src/config/index.js",
+            "request": "launch",
+            "args": [
+                "--watch",
+                "--env-file",
+                "${workspaceFolder}/.env"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node2"
+        }
+    ]
+}
