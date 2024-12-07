@@ -25,6 +25,15 @@ spec:
       containers:
         - image: ghcr.io/dragonflydb/dragonfly:latest
           name: dragonfly-auth
+          livenessProbe:
+            exec:
+              command:
+              - redis-cli
+              - --raw
+              - incr
+              - ping
+            initialDelaySeconds: 15
+            periodSeconds: 5
           ports:
             - containerPort: 6379
               protocol: TCP

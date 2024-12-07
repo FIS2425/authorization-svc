@@ -36,6 +36,16 @@ spec:
                   key: MONGOPASS
           image: mongo:latest
           name: mongodb-auth
+          livenessProbe:
+            exec:
+              command:
+              - mongosh
+              - --eval
+              - 'db.runCommand("ping").ok' 
+              - localhost:27017/test
+              - --quiet
+            initialDelaySeconds: 15
+            periodSeconds: 5
           ports:
             - containerPort: 27017
               protocol: TCP
