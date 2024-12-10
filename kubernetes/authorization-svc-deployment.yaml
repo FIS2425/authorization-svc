@@ -55,6 +55,11 @@ spec:
                 secretKeyRef:
                   name: auth-secrets
                   key: MONGOPASS
+            - name: SECURE_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: SECURE_COOKIE
             - name: MONGOURL
               valueFrom:
                 secretKeyRef:
@@ -62,7 +67,7 @@ spec:
                   key: MONGOURL
             - name: NODE_ENV
               value: production
-          image: ghcr.io/fis2425/authorization:latest
+          image: ghcr.io/fis2425/authorization:pr.92
           imagePullPolicy: Always
           name: authorization-svc
           livenessProbe:

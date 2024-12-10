@@ -5,8 +5,8 @@ metadata:
     kompose.cmd: kompose convert -o kubernetes/
     kompose.version: 1.34.0 (cbf2835db)
   labels:
-    io.kompose.service: dragonfly
-  name: dragonfly
+    io.kompose.service: dragonfly-auth
+  name: dragonfly-auth
 spec:
   type: ClusterIP
   ports:
@@ -14,4 +14,4 @@ spec:
       port: 6379
       targetPort: 6379
   selector:
-    io.kompose.service: dragonfly
+    io.kompose.service: dragonfly-auth
