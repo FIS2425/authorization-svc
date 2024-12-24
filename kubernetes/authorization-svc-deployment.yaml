@@ -55,6 +55,11 @@ spec:
                 secretKeyRef:
                   name: auth-secrets
                   key: MONGOPASS
+            - name: SECURE_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: SECURE_COOKIE
             - name: MONGOURL
               valueFrom:
                 secretKeyRef:
@@ -63,7 +68,17 @@ spec:
             - name: NODE_ENV
               value: production
           image: ghcr.io/fis2425/authorization:latest
+          imagePullPolicy: Always
           name: authorization-svc
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3001
+              httpHeaders:
+              - name: Custom-Header
+                value: Awesome
+            initialDelaySeconds: 15
+            periodSeconds: 5
           ports:
             - containerPort: 3001
               protocol: TCP

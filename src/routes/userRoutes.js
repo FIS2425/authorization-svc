@@ -22,6 +22,14 @@ import {
 
 const router = express.Router();
 
+// Health
+
+router.get('/healthz', (_req, res) => {
+  res.status(200).send('OK');
+});
+
+// Users
+
 router.post(
   '/users',
   validateAuthToken,
