@@ -72,11 +72,8 @@ spec:
           name: authorization-svc
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /api/v1/healthz
               port: 3001
-              httpHeaders:
-              - name: Custom-Header
-                value: Awesome
             initialDelaySeconds: 15
             periodSeconds: 5
           ports:
