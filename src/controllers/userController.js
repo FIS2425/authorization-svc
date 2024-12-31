@@ -363,7 +363,7 @@ export const enable2FA = async (req, res) => {
 
       return res
         .status(200)
-        .json({ message: '2FA enabled successfully', qrCodeUrl });
+        .json({ message: '2FA enabled successfully', qrCodeUrl, secret: secret.base32 });
     });
   } catch (error) {
     logger.error('Error enabling 2FA', {
