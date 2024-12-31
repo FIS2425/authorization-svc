@@ -49,6 +49,27 @@ const sampleUsers = [
     roles: ['doctor', 'clinicadmin'],
     doctorid: uuidv4(),
   },
+  {
+    _id: 'af1520a8-2d04-441e-ba19-aef5faf45dc8',
+    email: 'alfredoc@cloudmedix.com',
+    password: 'Alfredoc.123',
+    roles: ['doctor'],
+    doctorid: 'fea82b90-c146-4ea6-91b3-85a73c82e259',
+  },
+  {
+    _id: '679f55e3-a3cd-4a47-aebd-13038c1528a0',
+    email: 'frandoc@cloudmedix.com',
+    password: 'Frandoc.123',
+    roles: ['doctor'],
+    doctorid: 'a1ac971e-7188-4eaa-859c-7b2249e3c46b',
+  },
+  {
+    _id: '27163ac7-4f4d-4669-a0c1-4b8538405475',
+    email: 'adminstaff@cloudmedix.com',
+    password: 'Adminstaff.123',
+    roles: ['doctor', 'clinicadmin'],
+    doctorid: '6a86e820-e108-4a71-8f10-57c3e0ccd0ac',
+  },
 ];
 
 async function populateUsers() {
