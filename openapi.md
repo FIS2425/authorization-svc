@@ -357,6 +357,7 @@ Allows authenticated users to enable two-factor authentication.
 {
   message?: string
   qrCodeUrl?: string
+  secret?: string
 }
 ```
 
