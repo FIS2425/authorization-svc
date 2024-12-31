@@ -269,7 +269,7 @@ export const login = async (req, res) => {
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
         requestId: req.headers && req.headers['x-request-id'] || null,
       });
-      res.status(200).json({ message: 'Login successful' });
+      res.status(200).json({ message: 'Login successful', userId: user._id.toString(), roles: user.roles });
     } else {
       logger.error('Invalid credentials', {
         method: req.method,
@@ -363,7 +363,7 @@ export const enable2FA = async (req, res) => {
 
       return res
         .status(200)
-        .json({ message: '2FA enabled successfully', qrCodeUrl });
+        .json({ message: '2FA enabled successfully', qrCodeUrl, secret: secret.base32 });
     });
   } catch (error) {
     logger.error('Error enabling 2FA', {
@@ -423,7 +423,7 @@ export const verify2FA = async (req, res) => {
       requestId: req.headers && req.headers['x-request-id'] || null,
     });
 
-    return res.status(200).json({ message: 'Login successful' });
+    return res.status(200).json({ message: 'Login successful', userId: user._id.toString(), roles: user.roles });
   } catch (error) {
     logger.error('Error logging in with 2FA', {
       method: req.method,
