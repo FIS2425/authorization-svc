@@ -19,6 +19,12 @@ describe('User Controller', () => {
         password: 'password',
         roles: ['user'],
         comparePassword: vi.fn().mockResolvedValue(true),
+        toObject: vi.fn().mockReturnValue({
+          _id: 'userId',
+          email: 'testuser@test.com',
+          password: 'password',
+          roles: ['user'],
+        }),
       };
 
       vi.spyOn(User, 'findOne').mockResolvedValue(user);
@@ -930,5 +936,5 @@ describe('User Controller', () => {
       expect(response.status).toBe(404);
       expect(response.body.message).toBe('User not found');
     });
-  });
+      });
 });
