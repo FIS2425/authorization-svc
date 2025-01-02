@@ -42,7 +42,10 @@ export const generateTokens = async (user, res) => {
   redisClient.sadd(`user_tokens:${user._id.toString()}`, authToken);
   redisClient.sadd(`user_tokens:${user._id.toString()}`, refreshToken);
 
-  if (process.env.SECURE_COOKIE === 'true') {
+  if (process.env.DEV_COOKIE === 'true') {
+    res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000 });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000 });
+  } else if (process.env.SECURE_COOKIE === 'true') {
     res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000, sameSite: 'none', secure: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000, sameSite: 'none', secure: true });
   } else {

@@ -60,6 +60,11 @@ spec:
                 secretKeyRef:
                   name: auth-secrets
                   key: SECURE_COOKIE
+            - name: DEV_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: DEV_COOKIE
             - name: MONGOURL
               valueFrom:
                 secretKeyRef:
