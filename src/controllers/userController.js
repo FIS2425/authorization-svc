@@ -269,7 +269,8 @@ export const login = async (req, res) => {
         ip: req.headers && req.headers['x-forwarded-for'] || req.ip,
         requestId: req.headers && req.headers['x-request-id'] || null,
       });
-      res.status(200).json({ message: 'Login successful', userId: user._id.toString(), roles: user.roles });
+      const { password: _, ...userWithoutPassword } = user.toObject(); // Remove password from the user object to be returned
+      res.status(200).json({ message: 'Login successful', user: userWithoutPassword });
     } else {
       logger.error('Invalid credentials', {
         method: req.method,
