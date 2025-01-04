@@ -37,13 +37,6 @@ const sampleUsers = [
   },
   {
     _id: uuidv4(),
-    email: 'patient@cloudmedix.com',
-    password: 'Patient.123',
-    roles: ['patient'],
-    patientid: 'patient12345',
-  },
-  {
-    _id: uuidv4(),
     email: 'multiuser@cloudmedix.com',
     password: 'Multiuser.123',
     roles: ['doctor', 'clinicadmin'],
@@ -69,6 +62,34 @@ const sampleUsers = [
     password: 'Adminstaff.123',
     roles: ['doctor', 'clinicadmin'],
     doctorid: '6a86e820-e108-4a71-8f10-57c3e0ccd0ac',
+  },
+  {
+    _id: '8d0f780c-45f6-423d-ad86-87ef69740da9',
+    email: 'patient1@cloudmedix.com',
+    password: 'Patient.123',
+    roles: ['patient'],
+    patientid: 'f8b8d3e7-4bb7-4d1b-99a4-e3a8f0452f63',
+  },
+  {
+    _id: '03ceec7e-6682-42be-b4ad-bcfe1baf73dc',
+    email: 'patient2@cloudmedix.com',
+    password: 'Patient.123',
+    roles: ['patient'],
+    patientid: 'b1a7f9e3-6c5d-49d2-8f4a-3b7e9f5a6c71',
+  },
+  {
+    _id: '307408c6-954c-4505-bb4b-74e713267b84',
+    email: 'patient3@cloudmedix.com',
+    password: 'Patient.123',
+    roles: ['patient'],
+    patientid: 'd4f8b1a9-3e7c-45d2-9c6a-2b9f7e4a8c53',
+  },
+  {
+    _id: 'f1c78f18-b62e-4b0f-80fa-1655be4cd80e',
+    email: 'patient4@cloudmedix.com',
+    password: 'Patient.123',
+    roles: ['patient'],
+    patientid: 'a2c7f9d1-5b3a-42d8-8e5f-7c4b9f1e8a92',
   },
 ];
 
