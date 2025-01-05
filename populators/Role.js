@@ -23,7 +23,7 @@ const roles = [
       {
         _id: uuidv4(),
         method: 'get',
-        onRoles: ['clinicadmin', 'doctor', 'patient', 'himself'],
+        onRoles: ['admin', 'clinicadmin', 'doctor', 'patient', 'himself'],
       },
       {
         _id: uuidv4(),
@@ -50,7 +50,7 @@ const roles = [
       {
         _id: uuidv4(),
         method: 'get',
-        onRoles: ['doctor', 'patient', 'himself'],
+        onRoles: ['admin', 'clinicadmin', 'doctor', 'patient', 'himself'],
       },
       {
         _id: uuidv4(),
@@ -66,7 +66,11 @@ const roles = [
     _id: uuidv4(),
     role: 'doctor',
     permissions: [
-      { _id: uuidv4(), method: 'get', onRoles: ['patient', 'himself'] },
+      {
+        _id: uuidv4(),
+        method: 'get',
+        onRoles: ['admin', 'clinicadmin', 'doctor', 'patient', 'himself'],
+      },
       { _id: uuidv4(), method: 'changePassword', onRoles: ['himself'] },
     ],
   },
@@ -74,7 +78,11 @@ const roles = [
     _id: uuidv4(),
     role: 'patient',
     permissions: [
-      { _id: uuidv4(), method: 'get', onRoles: ['himself'] },
+      {
+        _id: uuidv4(),
+        method: 'get',
+        onRoles: ['admin', 'clinicadmin', 'doctor', 'patient', 'himself'],
+      },
       { _id: uuidv4(), method: 'changePassword', onRoles: ['himself'] },
     ],
   },
