@@ -42,6 +42,8 @@ services:
       - KAFKA_HOST=${KAFKA_HOST}
       - API_PREFIX=/api/v1
       - NODE_ENV=production
+      - SECURE_COOKIE=${SECURE_COOKIE}
+      - DEV_COOKIE=${DEV_COOKIE}
     depends_on:
       - mongodb
       - dragonfly
