@@ -46,10 +46,10 @@ export const generateTokens = async (user, res) => {
     res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000 });
     res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000 });
   } else if (process.env.SECURE_COOKIE === 'true') {
-    res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000, sameSite: 'none', secure: true });
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000, sameSite: 'none', secure: true });
+    res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000, sameSite: 'none', secure: true, partitioned: true });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000, sameSite: 'none', secure: true, partitioned: true });
   } else {
-    res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000, sameSite: 'none', cookiePartitionedForeign: 'Partitioned' });
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000, sameSite: 'none', cookiePartitionedForeign: 'Partitioned' });
+    res.cookie('token', authToken, { httpOnly: true, maxAge: token_expiration * 1000, sameSite: 'lax' });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: refreshToken_expiration * 1000, sameSite: 'lax' });
   }
 };
